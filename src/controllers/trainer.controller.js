@@ -83,7 +83,7 @@ module.exports = {
                         message: "Unauthorized"
                     })
                 } else {
-                    next(payload);
+                    next();
                 }
             })
         } else {

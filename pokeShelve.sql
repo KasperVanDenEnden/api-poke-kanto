@@ -28,7 +28,7 @@ CREATE TABLE `trainer` (
 
 CREATE TABLE `pokedex` (
   `dexNr` int NOT NULL,
-  `pokemon` varchar(25) UNIQUE NOT NULL DEFAULT 'Missingno',
+  `pokemon` varchar(25) NOT NULL DEFAULT 'Missingno',
   `type` varchar(25) NOT NULL,
   `catchRate` int NOT NULL DEFAULT 0.5,
   `minLevelCatch` int NOT NULL DEFAULT 5,
@@ -64,8 +64,8 @@ CREATE TABLE `trainerStorage` (
 
 CREATE TABLE `storage` (
     `storageId` int NOT NULL,
-    `pokemon` varchar(25) NOT NULL,
-    `lvl` int NOT NULL,
+    `pokemon` varchar(25) NOT NULL DEFAULT 'Missingno',
+    `lvl` int NOT NULL DEFAULT 1,
     `favorite` int NOT NULL DEFAULT 0,
     CONSTRAINT FK_StorageTrainerStorage FOREIGN KEY (storageId) REFERENCES `trainerStorage` (storageId) ON UPDATE CASCADE ON DELETE CASCADE
 );
