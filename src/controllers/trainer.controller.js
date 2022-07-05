@@ -5,11 +5,5 @@ const logger = require("../config/config").logger;
 
 module.exports = { 
 
-    getShopInventory: (req,res,next) => {
-
-    },
-    buyItemFromShop: (req,res,next) => {
-
-    }
 
 }    
