@@ -1,14 +1,16 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
+app.use(bodyParser.json());
 require('dotenv').config()
 const port = process.env.PORT
-const bodyParser = require("body-parser");
 const logger = require("./src/config/config").logger;
-app.use(bodyParser.json());
 
+
+// routers
 const shopRouter = require('./src/routes/shop.routes')
 const bagRouter = require('./src/routes/bag.routes')
-const catchRouter = require('./src/routes/auth.routes')
+const catchRouter = require('./src/routes/catch.routes')
 const pokemonRouter = require('./src/routes/pokemon.routes')
 const trainerRouter = require('./src/routes/trainer.routes')
 
