@@ -11,9 +11,9 @@ DROP TABLE IF EXISTS `trainer`;
 --
 
 CREATE TABLE `trainer` (
+  `trainerId` varchar(6) NOT NULL,
   `name` varchar(10) NOT NULL,
   `pwd` varchar(10) NOT NULL,
-  `trainerId` varchar(6) NOT NULL UNIQUE,
   `trainerLvl` int NOT NULL DEFAULT 0,
   `experience` int NOT NULL DEFAULT 0,
   `saldo` int NOT NULL DEFAULT 3000,
@@ -23,12 +23,12 @@ CREATE TABLE `trainer` (
   `slotFour` varchar(25) NOT NULL DEFAULT '-',
   `slotFive` varchar(25) NOT NULL DEFAULT '-',
   `slotSix` varchar(25) NOT NULL DEFAULT '-',
-  PRIMARY KEY (`name`)
+  PRIMARY KEY (`trainerId`)
 );
 
 CREATE TABLE `pokedex` (
   `dexNr` int NOT NULL,
-  `pokemon` varchar(25) UNIQUE NOT NULL,
+  `pokemon` varchar(25) UNIQUE NOT NULL DEFAULT 'Missingno',
   `type` varchar(25) NOT NULL,
   `catchRate` int NOT NULL DEFAULT 0.5,
   `minLevelCatch` int NOT NULL DEFAULT 5,

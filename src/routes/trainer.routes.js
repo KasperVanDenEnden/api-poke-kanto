@@ -3,8 +3,8 @@ const router = express.Router();
 const trainerController = require("../controllers/trainer.controller");
 
 
-router.get('/shop',);
-router.post('/shop/buy',);
-router.post('/shop/sell',);
+router.get('/trainer/login', trainerController.login);
+router.post('/trainer/new',);
+router.post('/trainer/profile',);
 
 module.exports = router
