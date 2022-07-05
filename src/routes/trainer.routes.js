@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const shopController = require("../controllers/shop.controller");
-const bagController = requite("../controllers/bag.controller");
+const trainerController = require("../controllers/trainer.controller");
+
 
 router.get('/shop',);
 router.post('/shop/buy',);
