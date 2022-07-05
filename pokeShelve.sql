@@ -28,7 +28,7 @@ CREATE TABLE `trainer` (
 
 CREATE TABLE `pokedex` (
   `dexNr` int NOT NULL,
-  `pokemon` varchar(25) UNIQUE NOT NULL DEFAULT 'Missingno',
+  `pokemon` varchar(25) NOT NULL DEFAULT 'Missingno',
   `type` varchar(25) NOT NULL,
   `catchRate` int NOT NULL DEFAULT 0.5,
   `minLevelCatch` int NOT NULL DEFAULT 5,
