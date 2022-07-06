@@ -3,9 +3,11 @@ const assert = require("assert");
 const { info } = require("console");
 const e = require("express");
 const logger = require("../config/config").logger;
+const functions = require("../config/functions");
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const jwtSecretKey = require("../config/config").jwtSecretKey; 
+
 
 const loginQuery = 'SELECT trainerId, pwd FROM trainer WHERE trainerId = ?;'
 const addTrainerQuery = 'INSERT INTO `trainer` (`name`,`pwd`,`trainerId`) VALUES (?,?,?);'
@@ -51,9 +53,7 @@ module.exports = {
         dbconnection.getConnection((err,connection) => {
             if (err) next(err);
             
-            let trainerId = "";
-                const random6Digits = Math.floor(100000 + Math.random() * 900000);
-                const newTrainerId = random6Digits.toString();
+                const newTrainerId = functions.getRandom6Digits();
                 // const newTrainerId = "111111";
                 connection.query(trainerIdExistQuery, [newTrainerId], (error,result,fields) => {
                     if (error) next(error);
@@ -62,7 +62,7 @@ module.exports = {
 
                             res.status(400).json({
                                 status: 400,
-                                message: "We ran into a problem finding a new trainerId for you. Please try again"
+                                message: "Oops we drew the same trainerId as someone else, please try again"
                             })
                         
 
@@ -108,11 +108,8 @@ module.exports = {
                 connection.query(changePwdQuery, [pwdNew,trainerId], (err,result,fields) => {
                     if (err) throw err;
                     connection.release();
-                    const { Changed} = result.info;
-                    logger.info(result);
-                    logger.info(result.info);
-                    logger.info(Changed);
-                    if (Object.keys(result).length === 1) {
+                    const message = result.info;
+                    if (functions.updateSuccesfull(message)) {
                         res.status(200).json({
                             status:200,
                             message:"Your password has been changed succesfully"
@@ -120,9 +117,10 @@ module.exports = {
                     } else {
                         res.status(400).json({
                             status:400,
-                            message:"Your password could not be changed"
+                            message:"Your password is incorrect"
                         })
                     }
+                  
                 })
 
             });
@@ -210,23 +208,16 @@ module.exports = {
             const token = authHeader.substring(7, authHeader.length)
             jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
                 if (err) {
-                    logger.info("Check 1");
-
                     res.status(401).json({
                         status: 401,
                         message: "Unauthorized"
                     })
                 } else {
-                  
                     req.tokenId = payload.trainerId;
-                    logger.info("tokenId: " + req.tokenId)
                     next()
-                    
                 }
             })
         } else {
-            logger.info("Check 2");
-
             res.status(401).json({
                 status: 401,
                 message: "Authorization header is missing"
@@ -234,4 +225,7 @@ module.exports = {
         }
     },
 
-}    
+}   
+
+
+

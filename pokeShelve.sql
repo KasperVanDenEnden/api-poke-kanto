@@ -6,6 +6,8 @@ DROP TABLE IF EXISTS `storage`;
 DROP TABLE IF EXISTS `trainerStorage`;
 DROP TABLE IF EXISTS `trainer`;
 DROP TABLE IF EXISTS `evolve`;
+DROP TABLE IF EXISTS `lotery`;
+DROP TABLE IF EXISTS `item`;
 
 --
 -- Table structure for all tables
@@ -76,6 +78,14 @@ CREATE TABLE `evolve` (
     PRIMARY KEY (`dexNr`)
 );
 
+CREATE TABLE `lotery` (
+    `trainerId` varchar(6) NOT NULL,
+    `day` varchar(10) NOT NULL DEFAULT CURDATE(),
+    `tickets` int NOT NULL DEFAULT 1,
+    PRIMARY KEY (`trainerId`,`day`)
+);
+
+
 
 --
 -- Inserting basic data in all tables
@@ -115,6 +125,14 @@ INSERT INTO `storage` (`storageId`) VALUES
 (2),
 (3);
 UNLOCK TABLES;
+
+LOCK TABLES `lotery` WRITE;
+INSERT INTO `lotery` (`trainerId`) VALUES 
+('061296'), 
+('120696'),
+('961206');
+UNLOCK TABLES;
+
 
 LOCK TABLES `pokedex` WRITE;
 INSERT INTO `pokedex` (`dexNr`,`pokemon`,`type`,`catchRate`,`evolution`) VALUES
@@ -274,74 +292,74 @@ UNLOCK TABLES;
 
 LOCK TABLES `evolve` WRITE;
 INSERT INTO `evolve` (`dexNr`,`evolveItem`,`evolveLvl`) VALUES
-(1,'none',15),
-(2,'none',15),
-(4,'none',15),
-(5,'none',15),
-(7,'none',15),
-(8,'none',15),
-(10,'none',15),
-(11,'none',15),
-(13,'none',15),
-(14,'none',15),
-(16,'none',15),
-(17,'none',15),
-(19,'none',15),
-(21,'none',15),
-(23,'none',15),
-(25,'none',15),
-(27,'none',15),
-(29,'none',15),
-(30,'none',15),
-(32,'none',15),
-(33,'none',15),
-(35,'none',15),
-(37,'none',15),
-(39,'none',15),
-(41,'none',15),
-(43,'none',15),
-(44,'none',15),
-(46,'none',15),
-(48,'none',15),
-(50,'none',15),
-(52,'none',15),
-(54,'none',15),
-(56,'none',15),
-(58,'none',15),
-(60,'none',15),
-(61,'none',15),
-(63,'none',15),
-(64,'none',15),
-(66,'none',15),
-(67,'none',15),
-(69,'none',15),
-(70,'none',15),
-(72,'none',15),
-(74,'none',15),
-(75,'none',15),
-(77,'none',15),
-(79,'none',15),
-(81,'none',15),
-(84,'none',15),
-(86,'none',15),
-(88,'none',15),
-(90,'none',15),
-(92,'none',15),
-(93,'none',15),
-(96,'none',15),
-(98,'none',15),
-(100,'none',15),
-(102,'none',15),
-(104,'none',15),
-(109,'none',15),
-(111,'none',15),
-(116,'none',15),
-(118,'none',15),
-(120,'none',15),
-(129,'none',15),
-(133,'none',15),
-(138,'none',15),
-(140,'none',15),
-(147,'none',15),
-(148,'none',15);
+(1,'none',16),
+(2,'none',32),
+(4,'none',16),
+(5,'none',36),
+(7,'none',16),
+(8,'none',36),
+(10,'none',7),
+(11,'none',11),
+(13,'none',7),
+(14,'none',10),
+(16,'none',18),
+(17,'none',36),
+(19,'none',20),
+(21,'none',20),
+(23,'none',22),
+(25,'Thunder Stone',0),
+(27,'none',22),
+(29,'none',16),
+(30,'Moon Stone',0),
+(32,'none',16),
+(33,'Moon Stone',0),
+(35,'Moon Stone',0),
+(37,'Fire Stone',0),
+(39,'Moon Stone',0),
+(41,'none',21),
+(43,'none',21),
+(44,'Leaf Stone',0),
+(46,'none',24),
+(48,'none',31),
+(50,'none',26),
+(52,'none',28),
+(54,'none',33),
+(56,'none',28),
+(58,'Fire Stone',0),
+(60,'none',25),
+(61,'Water Stone',0),
+(63,'none',16),
+(64,'Lick Cable',0),
+(66,'none',28),
+(67,'Lick Cable',0),
+(69,'none',21),
+(70,'Leaf Stone',0),
+(72,'none',30),
+(74,'none',25),
+(75,'Lick Cable',0),
+(77,'none',40),
+(79,'none',37),
+(81,'none',30),
+(84,'none',31),
+(86,'none',34),
+(88,'none',38),
+(90,'Water Stone',0),
+(92,'none',25),
+(93,'Lick Cable',0),
+(96,'none',26),
+(98,'none',28),
+(100,'none',30),
+(102,'Leaf Stone',0),
+(104,'none',28),
+(109,'none',35),
+(111,'none',42),
+(116,'none',36),
+(118,'none',33),
+(120,'Water Stone',0),
+(129,'none',20),
+(133,'Leaf Stone/Water Stone/Thunder Stone',0),
+(138,'none',40),
+(140,'none',40),
+(147,'none',30),
+(148,'none',55);
 UNLOCK TABLES;
