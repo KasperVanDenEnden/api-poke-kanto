@@ -2,50 +2,76 @@ const dbconnection = require("../../database/dbconnection");
 const assert = require("assert");
 const { info } = require("console");
 const logger = require("../config/config").logger;
+const functions = require("../config/functions");
+const ot = require("../config/ot");
 
-module.exports = { 
-    
-
-
-}  
-
-async function fetchData(url) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      } catch (error) {
-        console.error('Unable to fetch data:', error);
+module.exports = {
+  getPokedexQuery: (req, res, next) => {
+    logger.info("getPokedex aangeroepen");
+    let getPokedexQuery = "SELECT * FROM pokedex";
+    const { dexNr, pokemon, type, evolution, limit } = req.query;
+    logger.info(dexNr, pokemon, type, evolution, limit);
+    if (dexNr || pokemon || type || evolution) {
+      getPokedexQuery += " WHERE ";
+      if (dexNr) {
+        getPokedexQuery += `dexNr = ${dexNr}`;
       }
-  }
 
-function fetchNames(nameType) {
-    return fetchData(`https://www.randomlists.com/data/names-${nameType}.json`);
-  }
+      if (dexNr && (pokemon || type || evolution)) {
+        getPokedexQuery += " AND ";
+      }
 
-function pickRandom(list) {
-    return list[Math.floor(Math.random() * list.length)];
-  }
+      if (pokemon) {
+        getPokedexQuery += `pokemon LIKE '%${pokemon}%'`;
+      }
 
-async function generateName(gender) {
-    try {
-      // Fetch both name lists in parallel
-      const response = await Promise.all([
-        fetchNames(gender)
-      ]);
-  
-      // Promise.all returns an array of responses
-      // to our two requests, so select them
-      const [firstNames, lastNames] = response;
-  
-      // Pick a random name from each list
-      const firstName = pickRandom(firstNames.data);
-       
-      // Use a template literal to format the full name
-      return `${firstName}`;
-    } catch(error) {
-      console.error('Unable to generate name:', error);
+      if (pokemon && (type || evolution)) {
+        getPokedexQuery += " AND ";
+      }
+
+      if (type) {
+        getPokedexQuery += `type LIKE '%${type}%'`;
+      }
+
+      if (type && evolution) {
+        getPokedexQuery += " AND ";
+      }
+
+      if (evolution) {
+        getPokedexQuery += `evolution LIKE '%${evolution}%'`;
+      }
     }
-  }
+
+    if (limit) {
+      getPokedexQuery += ` LIMIT ${limit}`;
+    }
+    getPokedexQuery += ";";
+    req.getPokedexQuery = getPokedexQuery;
+    logger.info(getPokedexQuery);
+    next();
+  },
+  getPokedex: (req, res, next) => {
+    const { getPokedexQuery } = req;
+    dbconnection.getConnection((err, connection) => {
+      if (err) next(err);
+
+      connection.query(getPokedexQuery, (error, results, fields) => {
+        if (error) next(error);
+        connection.release();
+
+        if (functions.isNotEmptyResults(results)) {
+          res.status(200).json({
+            status: 200,
+            results: results,
+          });
+        } else {
+          res.status(201).json({
+            status: 201,
+            message:
+              "According to prof. Oak there exists no Pokèmon to those details. ",
+          });
+        }
+      });
+    });
+  },
+};

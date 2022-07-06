@@ -26,7 +26,7 @@ app.all("*", (req, res, next) => {
   // catch routes
   app.use(catchRouter);
   // shop routes
-  app.use(catchRouter);
+  app.use(shopRouter);
   // pokemon routes
   app.use(pokemonRouter);
   //trainer routes
