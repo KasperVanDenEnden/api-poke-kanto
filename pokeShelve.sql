@@ -136,9 +136,9 @@ UNLOCK TABLES;
 
 LOCK TABLES `pokedex` WRITE;
 INSERT INTO `pokedex` (`dexNr`,`pokemon`,`type`,`catchRate`,`evolution`) VALUES
-(1,'Bulbasaur','Grass/Poisen',1,'Ivysaur'),
-(2,'Ivysaur','Grass/Poisen',0.5,'Venasaur'),
-(3,'Venasaur','Grass/Poisen',0.25,'none'),
+(1,'Bulbasaur','Grass/Poison',1,'Ivysaur'),
+(2,'Ivysaur','Grass/Poison',0.5,'Venasaur'),
+(3,'Venasaur','Grass/Poison',0.25,'none'),
 (4,'Charmander','Fire',1,'Charmeleon'),
 (5,'Charmeleon','Fire',0.5,'Charizard'),
 (6,'Charizard','Fire/Flying',0.25,'none'),

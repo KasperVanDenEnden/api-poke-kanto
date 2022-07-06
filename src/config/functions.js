@@ -4,18 +4,35 @@ module.exports = {
         const random6Digits = Math.floor(100000 + Math.random() * 900000);
         return random6Digits.toString();
     },
-    isEmpty(result) {
+    isNotEmpty(result) {
         if (Object.keys(result).length === 1) {
             return true;
         }
         return false;
-     
+    },
+    isNotEmptyResults(results) {
+        if (Object.keys(results).length > 0) {
+            return true;
+        }
+        return false;
     },
     updateSuccesfull(message) {
         if (message.includes("Changed: 1")) {
             return true;
         }
         return false;
+    },
+    affectedRow(affectedRow) {
+        if (affectedRow === 1) {
+            return true;
+        }
+        return false;
+    },
+    selectKeyTrainerId(result) {
+        Object.keys(result).forEach(function(key) {
+            var row = result[key];
+            return row.trainerId;
+        })
     },
     getTicketMatchingNumbers(ticket,trainerId) {
         const ticketNumbers = ticket.split("");
@@ -69,8 +86,6 @@ module.exports = {
             return "Ball";
         }
         return "Coins";
-        
-        
     }
 
 }
