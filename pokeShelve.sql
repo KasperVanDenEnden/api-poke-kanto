@@ -82,7 +82,7 @@ CREATE TABLE `evolve` (
 
 CREATE TABLE `lotery` (
     `trainerId` varchar(6) NOT NULL,
-    `day` varchar(10) NOT NULL DEFAULT CURRENT_DATE,
+    `day` varchar(10) NOT NULL DEFAULT CURDATE(),
     `tickets` int NOT NULL DEFAULT 1,
     PRIMARY KEY (`trainerId`,`day`)
 );
