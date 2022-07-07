@@ -6,7 +6,7 @@ const functions = require("../config/functions");
 
 const getBagByIdQuery = 'SELECT bagId FROM trainerBag WHERE trainerId = ?;'
 const itemNotInBagYetQuery = 'SELECT * FROM bag WHERE bagId = ? AND item = ?;'
-const newItemInBagQuery = 'INSERT INTO bag (trainerId,item,quantity,type) VALUES (?,?,?,?);'
+const newItemInBagQuery = 'INSERT INTO bag (bagId,item,quantity,sort) VALUES (?,?,?,?);'
 const getItemQuery = 'SELECT * FROM item WHERE item = ?;'
 const saldoCheckQuery = 'SELECT * FROM trainer WHERE trainerId = ? AND saldo >= ?;'
 
@@ -122,7 +122,6 @@ module.exports = {
                         connection.query(sellItemToShopQuery, [quantity,bagId,item],(error,result,fields) => {
                             if (error) next(error);
                             connection.release();
-                            logger.info(result.info);
                             if (functions.updateSuccesfull(result.info)) {
                             next();
                             } else {
@@ -145,7 +144,6 @@ module.exports = {
     receiveMoneyItem: (req,res,next) => {
         const {item,quantity} = req.body;
         const {tokenId} = req;
-        logger.info(item,quantity,tokenId)
         dbconnection.getConnection((err,connection) => {
             if (err) next(err);
 
@@ -221,7 +219,6 @@ module.exports = {
                             connection.query(sellItemToShopQuery,[quantity,bagId,item],(error,result,fields) => {
                                 if (error) next(error);
                                 connection.release();
-                                logger.info(result.affectedRows)
                                 if (functions.affectedRow(result.affectedRows)) {
                                     res.status(201).json({
                                         status: 201,
@@ -248,24 +245,22 @@ module.exports = {
     },
     loteryTicketsLeft: (req,res,next) => { 
         const tokenId = req.tokenId;
-
         dbconnection.getConnection((err,connection) => {
             if (err) next(err);
 
             connection.query(checkIfTicketHasBeenDrawnTodayQuery, [tokenId], (error,result,fields) => {
                 if (error) next(error);
-                // Object Object???
+                
                 const {trainerId,tickets} = result[0];
-               
                 if (parseInt(tickets) < 10) {
                     if (trainerId === tokenId) {
-
                         connection.query(anotherTicketOfTheDayQuery,[tokenId], (error,result,fields) => {
                             if (error) next(error);
                             connection.release();
-                            
                             const affectedRow = result.affectedRows;
+                            logger.error(affectedRow);
                             if (functions.affectedRow(affectedRow)) {
+                      
                                 next();
                             } else {
                                 res.status(401).json({
@@ -295,8 +290,7 @@ module.exports = {
         const tokenId = req.tokenId;
         const ticket = functions.getRandom6Digits();
         const matches = functions.getTicketMatchingNumbers(ticket,tokenId);
-        const message = functions.getLoteryMessage(matches);
-
+        let message = functions.getLoteryMessage(matches);
       
         if (matches > 0) {
             const prize = functions.getLoteryPrize(matches);
@@ -307,18 +301,17 @@ module.exports = {
                 if (err) next(err);
 
                 if (itemType === "Coins") {
-
-                    connection.query(prizeMoneyQuery,[quantity,tokenId], (error,result,fields) => {
+                    connection.query(receiveMoneyItemQuery,[quantity,tokenId], (error,result,fields) => {
                         if (error) next(error);
-
+                        connection.release();
                         if (result.affectedRows === 1) {
-                            message += "Your prize of " + quantity + " " + prize + " has been added to your account!";
+                            message += " Your prize of " + quantity + " " + prize + " has been added to your account!";
                             res.status(200).json({
                                 status:200,
                                 message: message
                             })
                         } else {
-                            message += "Team Rocket appeared and stole your prize of " + quantity + " " + prize + ". Tough luck!";
+                            message += " Team Rocket appeared and stole your prize of " + quantity + " " + prize + ". Tough luck!";
                             res.status(401).json({
                                 status: 401,
                                 message: message
@@ -336,19 +329,20 @@ module.exports = {
                         connection.query(itemNotInBagYetQuery,[bagId,prize], (error,result,fields) => {
                             if (error) next(error);
 
-                            if (isNotEmpty(result)) {
+                            if (functions.isNotEmpty(result)) {
+
                                 connection.query(loteryGivePrizeQuery,[quantity,bagId,prize], (error,result,fields) => {
                                     if (error) next(error);
                                     connection.release();
 
                                     if (functions.updateSuccesfull(result)) {
-                                        message += "Your prize of " + quantity + " " + prize + " has been added to your inventory!";
+                                        message += " Your prize of " + quantity + " " + prize + " has been added to your inventory!";
                                         res.status(200).json({
                                             status:200,
                                             message: message
                                         })
                                     } else {
-                                        message += "Team Rocket appeared and stole your prizeof " + quantity + " " + prize + ". Tough luck!";
+                                        message += " Team Rocket appeared and stole your prizeof " + quantity + " " + prize + ". Tough luck!";
                                         res.status(401).json({
                                             status: 401,
                                             message: message
@@ -356,38 +350,48 @@ module.exports = {
                                     }
                                 })
                             } else {
+
                                 connection.query(newItemInBagQuery,[bagId,prize,quantity,itemType], (error,result,fields) => {
                                     if (error) next(error);
                                     connection.release();
-
-                                    if (result.affectedRows === 1) {
-                                        message += "Your prize of " + quantity + " " + prize + " has been added to your inventory!";
+                                    if (functions.affectedRow(result)) {
+                                        message += " Your prize of " + quantity + " " + prize + " has been added to your inventory!";
                                         res.status(200).json({
                                             status:200,
                                             message: message
                                         })
                                     } else {
-                                        message += "Team Rocket appeared and stole your prize of " + quantity + " " + prize + ". Tough luck!";
+                                        logger.info("CHECK 19");
+                                        message += " Team Rocket appeared and stole your prize of " + quantity + " " + prize + ". Tough luck!";
                                         res.status(401).json({
                                             status: 401,
                                             message: message
                                         })
+                                        res.end();
                                     }
+                                    logger.info("CHECK 1");
                                 })
                             }
+                            logger.info("CHECK 2");
                         })
+                        logger.info("CHECK 3");
                     })
+                    logger.info("CHECK 4");
                 }
+                logger.info("CHECK 5");
             }) 
+            logger.info("CHECK 6");
         } else {
+            logger.info("CHECK 7");
+         
+
             res.status(400).json({
                 status:400,
                 message: message
             })
+            logger.info("CHECK 8");
         }
-        
-
-       
+        logger.info("CHECK 9");
     },
     
 

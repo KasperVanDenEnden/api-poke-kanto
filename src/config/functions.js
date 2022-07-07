@@ -1,5 +1,6 @@
 const dbconnection = require("../../database/dbconnection");
 const assert = require("assert");
+const { logger } = require("./config");
 
 const threwBall = "UPDATE bag SET quantity = quantity - 1 WHERE bagId = ? AND item = ?;"
 const itemsLeft = "SELECT quantity FROM bag WHERE bagId = ? AND item = ?;"
@@ -87,7 +88,7 @@ module.exports = {
     catchMasterball(catchRate) {
 
     },
-    threwBall(bagId,url){
+    ballString(url) {
         urlParts = url.split("/")
         let item;
         if (urlParts[2] === "poke") {
@@ -99,6 +100,10 @@ module.exports = {
         } else if (urlParts[2] === "master") {
             item = "Master Ball"
         }
+        return item;
+    },
+    threwBall(bagId,url){
+        let item = this.ballString(url);
         
         dbconnection.getConnection((err,connection) => {
             if (err) throw err
@@ -119,12 +124,12 @@ module.exports = {
     // lotery functions
     getTicketMatchingNumbers(ticket,trainerId) {
         const ticketNumbers = ticket.split("");
-        const matches = 0;
-        ticketNumbers.forEach(element => {
-            if (ticket.includes(element)) {
-                count++;
+        let matches = 0;
+        for (let i = 0; i < 6;i++) {
+            if (trainerId.includes(ticketNumbers[i])) {
+                matches++;
             }
-        });
+        }
         return matches;
     },
     getLoteryMessage(matches) {
@@ -153,7 +158,7 @@ module.exports = {
         if (matches === 1) {
             return 30;
         } else if (matches === 2) {
-            return 50000;
+            return 5000;
         } else if (matches === 3) {
             return 20;
         } else if (matches === 4) {
