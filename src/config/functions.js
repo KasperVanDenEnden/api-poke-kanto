@@ -37,16 +37,16 @@ module.exports = {
         let gender = Math.floor(Math.random() * (2 - 1 + 1) + 1);
         if (pokemon === "Nidoran♂") { return "♂";}
         if (pokemon === "Nidoran♀") { return "♀";}
+        if (pokemon === "Magenemite" || pokemon === "Magneton") { return "~"}
+        if (pokemon === "Articuno" || pokemon === "Zapdos" || pokemon === "Moltres" || pokemon === "Mewtwo" || pokemon === "Mew") { return "~"}
         if (gender === 1) {return "♂";}
         return "♀";
     },
     caughtPokemon(dexNr,pokemon,type,level,gender,shinyBool) {
         let caughtPokemon = {dexNr,pokemon,type,level,gender};
         if (shinyBool) {
-            const shiny = true;
-            let caughtPokemon = {shiny};
+            caughtPokemon.shiny = 1;
         }
-        
         return caughtPokemon;
     },
     catchPokeball(catchRate) {

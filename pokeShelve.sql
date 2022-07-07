@@ -183,7 +183,7 @@ INSERT INTO `pokedex` (`dexNr`,`pokemon`,`type`,`catchRate`,`evolution`) VALUES
 (28,'Sandslash','Sandshrew',0.5,'none'),
 (29,'Nidoran♀','Poison',1,'Nidorina'),
 (30,'Nidorina','Poison',0.75,'Nidoqueen'),
-(31,'NidoQueen','Poison/Ground',0.5,'none'),
+(31,'Nidoqueen','Poison/Ground',0.5,'none'),
 (32,'Nidoran♂','Poison',1,'Nidorino'),
 (33,'Nidorino','Poison',0.75,'Nidoking'),
 (34,'Nidoking','Poison/Ground',0.5,'none'),
