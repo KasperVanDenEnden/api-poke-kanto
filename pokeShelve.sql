@@ -75,7 +75,7 @@ CREATE TABLE `storage` (
 
 CREATE TABLE `evolve` (
     `dexNr` int NOT NULL,
-    `evolveItem` varchar(25) NOT NULL DEFAULT 'none',
+    `evolveItem` varchar(50) NOT NULL DEFAULT 'none',
     `evolveLvl` int NOT NULL DEFAULT 0,
     PRIMARY KEY (`dexNr`)
 );
