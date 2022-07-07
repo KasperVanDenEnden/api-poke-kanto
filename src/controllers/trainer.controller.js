@@ -17,6 +17,7 @@ const nicknameExistQuery = "SELECT name FROM trainer WHERE name =?;";
 const trainerIdExistQuery =
   "SELECT trainerId FROM trainer WHERE trainerId = ?;";
 const changePwdQuery = "UPDATE trainer SET pwd = ? WHERE trainerId = ?;";
+const getTrainerCardQuery = 'SELECT * FROM trainer WHERE trainerId = ?;';
 
 module.exports = {
   checkNewTrainer: (req, res, next) => {
@@ -218,6 +219,7 @@ module.exports = {
     }
   },
   validateToken: (req, res, next) => {
+    logger.info('Validate token');
     const authHeader = req.headers.authorization;
     if (authHeader) {
       const token = authHeader.substring(7, authHeader.length);
@@ -238,5 +240,31 @@ module.exports = {
         message: "Authorization header is missing",
       });
     }
+  },
+  getTrainerCard: (req, res, next) => {
+    const tokenId = req.tokenId;
+    dbconnection.getConnection((err,connection) => {
+      if (err) next(err);
+      connection.query(getTrainerCardQuery,[tokenId],(error,result,fields) => {
+        if (error) next(error);
+        connection.release();
+        delete result[0].pwd;
+        delete result[0].experience; 
+        if (functions.isNotEmpty(result)) {
+          res.status(200).json({
+            status:200,
+            result:result
+          })
+        } else {
+          res.status(400).json({
+            status:400,
+            message:"You seem to have lost your Trainer Card. You will have to request a new one!"
+          })
+        }
+
+      })
+
+    })
+
   },
 };

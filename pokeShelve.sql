@@ -33,7 +33,7 @@ CREATE TABLE `pokedex` (
   `dexNr` int NOT NULL,
   `pokemon` varchar(25) NOT NULL DEFAULT 'Missingno',
   `type` varchar(25) NOT NULL,
-  `catchRate` int NOT NULL DEFAULT 0.5,
+  `catchRate` float NOT NULL DEFAULT 0.5,
   `minLevelCatch` int NOT NULL DEFAULT 5,
   `maxLevelCatch` int NOT NULL DEFAULT 20,
   `evolution` varchar(25) NULL DEFAULT 'none',
@@ -68,6 +68,8 @@ CREATE TABLE `storage` (
     `pokemon` varchar(25) NOT NULL DEFAULT 'Missingno',
     `lvl` int NOT NULL DEFAULT 1,
     `favorite` int NOT NULL DEFAULT 0,
+    `shiny` tinyint NOT NULL DEFAULT 0,
+    `gender` varchar(1) NOT NULL DEFAULT '♂',
     CONSTRAINT FK_StorageTrainerStorage FOREIGN KEY (storageId) REFERENCES `trainerStorage` (storageId) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -83,6 +85,14 @@ CREATE TABLE `lotery` (
     `day` varchar(10) NOT NULL DEFAULT CURDATE(),
     `tickets` int NOT NULL DEFAULT 1,
     PRIMARY KEY (`trainerId`,`day`)
+);
+
+CREATE TABLE `item` (
+    `item` varchar(25) NOT NULL,
+    `sort` varchar(25) NOT NULL,
+    `buyValue` int NOT NULL DEFAULT 200,
+    `sellValue` int NOT NULL DEFAULT 100,
+    PRIMARY KEY (`item`)
 );
 
 
@@ -131,6 +141,13 @@ INSERT INTO `lotery` (`trainerId`) VALUES
 ('061296'), 
 ('120696'),
 ('961206');
+UNLOCK TABLES;
+
+LOCK TABLES `item` WRITE;
+INSERT INTO `item` VALUES 
+('Poke Ball','Ball',200,100),
+('Great Ball','Ball',500,250),
+('Ultra Ball','Ball',1000,500);
 UNLOCK TABLES;
 
 
@@ -269,13 +286,13 @@ INSERT INTO `pokedex` (`dexNr`,`pokemon`,`type`,`catchRate`,`evolution`) VALUES
 (131,'Lapras','Ice',0.5,'none'),
 (132,'Ditto','Normal',0.5,'none'),
 (133,'Eevee','normal',0.5,'Vaporeon/Jolteon/Flareon'),
-(134,'Vaporeon','Water',0.3,'none'),
-(135,'Jolteon','Electric',0.4,'none'),
-(136,'Flareon','Fire',0.4,'none'),
+(134,'Vaporeon','Water',0.25,'none'),
+(135,'Jolteon','Electric',0.25,'none'),
+(136,'Flareon','Fire',0.25,'none'),
 (137,'Porygon','Normal',0.5,'none'),
-(138,'Omanyte','Rock/Water',0.4,'Omastar'),
+(138,'Omanyte','Rock/Water',0.5,'Omastar'),
 (139,'Omastar','Rock/Water',0.25,'none'),
-(140,'Kabuto','Rock/Water',0.4,'Kabutops'),
+(140,'Kabuto','Rock/Water',0.5,'Kabutops'),
 (141,'Kabutops','Rock/Water',0.25,'none'),
 (142,'Aerodactyl','Rock/Flying',0.25,'none'),
 (143,'Snorlax','Normal',0.5,'none'),
@@ -283,8 +300,8 @@ INSERT INTO `pokedex` (`dexNr`,`pokemon`,`type`,`catchRate`,`evolution`) VALUES
 (145,'Zapdos','Electric/Flying',0.1,'none'),
 (146,'Moltres','Fire/Flying',0.1,'none'),
 (147,'Dratini','Dragon',0.5,'Dragonair'),
-(148,'Dragonair','Dragon',0.4,'Dragonite'),
-(149,'Dragonite','Dragon/Flying',0.3,'none'),
+(148,'Dragonair','Dragon',0.5,'Dragonite'),
+(149,'Dragonite','Dragon/Flying',0.25,'none'),
 (150,'Mewtwo','Psychic',0.1,'none'),
 (151,'Mew','Psychic',0.1,'none');
 UNLOCK TABLES;

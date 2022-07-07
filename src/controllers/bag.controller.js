@@ -6,6 +6,7 @@ const functions = require("../config/functions");
 
 const getBagByIdQuery = "SELECT bagId FROM trainerBag WHERE trainerId = ?;";
 
+
 module.exports = {
   getBagById: (req, res, next) => {
     const tokenId = req.tokenId;
@@ -77,6 +78,5 @@ module.exports = {
       });
     });
   },
-
-  sellItemFromBag: (req, res, next) => {},
+  
 };

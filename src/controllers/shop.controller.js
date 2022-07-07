@@ -7,6 +7,19 @@ const functions = require("../config/functions");
 const getBagByIdQuery = 'SELECT bagId FROM trainerBag WHERE trainerId = ?;'
 const itemNotInBagYetQuery = 'SELECT * FROM bag WHERE bagId = ? AND item = ?;'
 const newItemInBagQuery = 'INSERT INTO bag (trainerId,item,quantity,type) VALUES (?,?,?,?);'
+const getItemQuery = 'SELECT * FROM item WHERE item = ?;'
+const saldoCheckQuery = 'SELECT * FROM trainer WHERE trainerId = ? AND saldo >= ?;'
+
+// shop queries
+const getShopInventoryQuery = "SELECT * FROM item;"
+const receiveMoneyItemQuery = "UPDATE trainer SET saldo = saldo + ? WHERE trainerId = ?;"
+const giveMoneyItemQuery = "UPDATE trainer SET saldo = saldo - ? WHERE trainerId = ?;"
+const checkSellItemQuery = "SELECT * FROM bag WHERE bagId = ? AND item = ? AND quantity >=?;"
+const sellItemToShopQuery = "UPDATE bag SET quantity = quantity - ? WHERE bagId = ? AND item = ?;"
+const buyItemQuery = "UPDATE bag SET quantity = quantity + ? WHERE bagId = ? AND item = ?;"
+const getItemValuesQuery = "SELECT * FROM item WHERE item = ?;"
+const newItemBoughtQuery = "INSERT INTO bag (bagId,item,quantity,sort) VALUES (?,?,?,?);"
+
 
 // lotery queries
 const checkIfTicketHasBeenDrawnTodayQuery = 'SELECT * FROM lotery WHERE trainerId = ? AND day = CURDATE();';
@@ -18,13 +31,224 @@ const anotherTicketOfTheDayQuery = 'UPDATE lotery SET tickets = tickets + 1 WHER
 module.exports = { 
     
     getShopInventory: (req,res,next) => {
+        dbconnection.getConnection((err,connection) => {
+            if (err) next(err);
 
+            connection.query(getShopInventoryQuery,(error,results,fields) => {
+                if (error) next(error);
+                connection.release();
+
+                if (functions.isNotEmptyResults(results)) {
+                    res.status(200).json({
+                        status:200,
+                        results:results
+                    })
+                } else {
+                    res.status(201).json({
+                        status:201,
+                        message:"The shop has to restock, apologies for the inconvenience!"
+                    })
+                }
+            })
+        })
     },
     buyItemFromShop: (req,res,next) => {
+        const {item,quantity} = req.body;
+        const {bagId} = req;
 
+        dbconnection.getConnection((err,connection) => {
+            if (err) next(err);
+
+            connection.query(itemNotInBagYetQuery,[bagId,item],(error,result,fields) => {
+                if (error) next(error);
+
+                if (!functions.isNotEmpty(result)) {
+
+                    connection.query(getItemQuery,[item],(error,result,fields) => {
+                        if (error) next(error);
+
+                        const sort = result[0].sort;
+                        if (sort)  {
+                            connection.query(newItemBoughtQuery,[bagId,item,quantity,sort],(error,result,fields) =>{
+                                if (error) next(error);
+                                connection.release();
+
+                                if (functions.affectedRow(result)) {
+                                    next();
+                                } else {
+                                    res.status(401).json({
+                                        status: 401,
+                                        message: "You offended the clerk and he will not let you buy the thing you wanted!"
+                                    })
+                                }
+                            })
+                        } else {
+                            connection.release();
+                            res.status(400).json({
+                                status: 400,
+                                message: "Can't find item sort"
+                            })
+                        }                  
+                    })
+                } else {
+                    connection.query(buyItemQuery,[quantity,bagId,item],(error,result,fields) =>{
+                        if (error) next(error);
+                        connection.release();
+
+                        if (functions.updateSuccesfull(result.info)) {
+                            next();
+                        } else {
+                            res.status(401).json({
+                                status: 401,
+                                message: "You offended the clerk and he will not let you buy the thing you wanted!"
+                            })
+                        }
+                    })
+                }
+            })
+        })
+    },
+    sellItemFromBag: (req, res, next) => {
+        const {item,quantity} = req.body;
+        const {bagId} = req;
+    
+        dbconnection.getConnection((err,connection) => {
+            if (err) next(err);
+    
+                connection.query(checkSellItemQuery,[bagId,item,quantity],(error,result,fields) =>{
+                    if (error) next(error);
+
+                    if (functions.isNotEmpty(result)) {
+                        connection.query(sellItemToShopQuery, [quantity,bagId,item],(error,result,fields) => {
+                            if (error) next(error);
+                            connection.release();
+                            logger.info(result.info);
+                            if (functions.updateSuccesfull(result.info)) {
+                            next();
+                            } else {
+                            res.status(401).json({
+                                status:401,
+                                message: "The clerk was not able to buy your goods. Please make sure you are trying to sell the right item and quantity."
+                            })
+                            }
+                        })
+                    } else {
+                        connection.release();
+                        res.status(400).json({
+                            status:400,
+                            message:"Clerk: You are trying to sell more than you own...."
+                        })
+                    }
+                }) 
+        })
+    },
+    receiveMoneyItem: (req,res,next) => {
+        const {item,quantity} = req.body;
+        const {tokenId} = req;
+        logger.info(item,quantity,tokenId)
+        dbconnection.getConnection((err,connection) => {
+            if (err) next(err);
+
+            connection.query(getItemValuesQuery,[item],(error,result,fields) => {
+                if (error) next(error);
+
+                if (functions.isNotEmpty(result)) {
+                    const sellValue = result[0].sellValue;
+                    const saldo = sellValue * quantity;
+               
+                    connection.query(receiveMoneyItemQuery,[saldo,tokenId],(error,result,fields) => {
+                        if (error) next(error);
+                        connection.release();
+                       
+                        if (functions.updateSuccesfull(result.info)) {
+                            res.status(200).json({
+                                status:200,
+                                message: "The clerk has wired the " + saldo + " Pokecoins to your account!"
+                            })
+                        } else {
+                            res.status(404).json({
+                                status:404,
+                                message: "Team Rocket planted a virus, they intercepted the payment and stole your money to fund their evil deeds!"
+                            })
+                        }
+                    })
+                } else {
+                    connection.release();
+                    res.status(400).json({
+                        status:400,
+                        message: "Clerk seems to have misplaced the list with prices."
+                    })
+                }
+            })
+        })
+    },
+    giveMoneyItem: (req,res,next) => {
+        const {item,quantity} = req.body;
+        const {tokenId,bagId} = req;
+
+        dbconnection.getConnection((err,connection) => {
+            if (err) next(err);
+
+            connection.query(getItemValuesQuery,[item],(error,result,fields) => {
+                if (error) next(error);
+
+                if (functions.isNotEmpty(result)) {
+                    const buyValue = result[0].buyValue;
+                    const saldo = buyValue * quantity;
+                    
+                    // Check Enough saldo
+                    connection.query(saldoCheckQuery,[tokenId,saldo],(error,result,fields) => {
+                        if (error) next(error);
+                        
+                        if (functions.isNotEmpty(result)) {
+                            connection.query(giveMoneyItemQuery,[saldo,tokenId],(error,result,fields) => {
+                                if (error) next(error);
+                                connection.release();
+                            
+                                if (functions.updateSuccesfull(result.info)) {
+                                    res.status(200).json({
+                                        status:200,
+                                        message: "You wired the " + saldo + " Pokecoins from your account to the shop!"
+                                    })
+                                } else {
+                                    res.status(404).json({
+                                        status:404,
+                                        message: "Your bank seems to be offline..."
+                                    })
+                                }
+                            })
+                        } else {
+                            connection.query(sellItemToShopQuery,[quantity,bagId,item],(error,result,fields) => {
+                                if (error) next(error);
+                                connection.release();
+                                logger.info(result.affectedRows)
+                                if (functions.affectedRow(result.affectedRows)) {
+                                    res.status(201).json({
+                                        status: 201,
+                                        message: "You seem to be low on cash"
+                                    })
+                                } else {
+                                    res.status(402).json({
+                                        status: 402,
+                                        message: "You took a page out of Team Rockets book and rand of with the goods!"
+                                    })
+                                }
+                            })
+                        }
+                    })
+                } else {
+                    connection.release();
+                    res.status(400).json({
+                        status:400,
+                        message: "Clerk seems to have misplaced the list with prices."
+                    })
+                }
+            })
+        })
     },
     loteryTicketsLeft: (req,res,next) => { 
         const tokenId = req.tokenId;
+
         dbconnection.getConnection((err,connection) => {
             if (err) next(err);
 
@@ -72,13 +296,12 @@ module.exports = {
         const ticket = functions.getRandom6Digits();
         const matches = functions.getTicketMatchingNumbers(ticket,tokenId);
         const message = functions.getLoteryMessage(matches);
-        logger.info("Matches = " + matches);
+
+      
         if (matches > 0) {
             const prize = functions.getLoteryPrize(matches);
             const quantity = functions.getLoteryPrizeQuantity(matches);
             const itemType = functions.getItemType(prize);
-
-            logger.info("Itemtype = " + itemType);
 
             dbconnection.getConnection((err,connection) =>{
                 if (err) next(err);

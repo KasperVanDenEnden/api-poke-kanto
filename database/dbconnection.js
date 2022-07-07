@@ -14,16 +14,16 @@ const pool = mysql.createPool({
     database: process.env.DB_DATABASE,
 });
 
-pool.on('connection', function (connection) {
-  logger.info(`Connected to database '${connection.config.database}'`)
-})
+// pool.on('connection', function (connection) {
+//   logger.info(`Connected to database '${connection.config.database}'`)
+// })
 
-pool.on('acquire', function (connection) {
-  logger.info('Connection %d acquired', connection.threadId)
-})
+// pool.on('acquire', function (connection) {
+//   logger.info('Connection %d acquired', connection.threadId)
+// })
 
-pool.on('release', function (connection) {
-  logger.info('Connection %d released', connection.threadId)
-})
+// pool.on('release', function (connection) {
+//   logger.info('Connection %d released', connection.threadId)
+// })
 
 module.exports = pool;
