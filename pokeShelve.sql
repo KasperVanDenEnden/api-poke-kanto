@@ -75,14 +75,14 @@ CREATE TABLE `storage` (
 
 CREATE TABLE `evolve` (
     `dexNr` int NOT NULL,
-    `evolveItem` varchar(25) NOT NULL DEFAULT 'none',
+    `evolveItem` varchar(50) NOT NULL DEFAULT 'none',
     `evolveLvl` int NOT NULL DEFAULT 0,
     PRIMARY KEY (`dexNr`)
 );
 
 CREATE TABLE `lotery` (
     `trainerId` varchar(6) NOT NULL,
-    `day` varchar(10) NOT NULL DEFAULT CURDATE(),
+    `day` varchar(10) NOT NULL DEFAULT (CURRENT_DATE),
     `tickets` int NOT NULL DEFAULT 1,
     PRIMARY KEY (`trainerId`,`day`)
 );

@@ -8,8 +8,8 @@ const bagController = require("../controllers/bag.controller");
 
 
 router.get('/catch/poke',trainerController.validateToken,bagController.getBagById,catchController.pokeBallLeft,catchController.shiny,storageController.getStorage,catchController.getPokemonAndCatchRate,catchController.catchPokeball);
-router.get('/catch/great',);
-router.get('/catch/ultra',);
+router.get('/catch/great',trainerController.validateToken,bagController.getBagById,catchController.pokeBallLeft,catchController.shiny,storageController.getStorage,catchController.getPokemonAndCatchRate,catchController.catchPokeball);
+router.get('/catch/ultra',trainerController.validateToken,bagController.getBagById,catchController.pokeBallLeft,catchController.shiny,storageController.getStorage,catchController.getPokemonAndCatchRate,catchController.catchPokeball);
 router.get('/catch/master',);
 
 
