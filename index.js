@@ -13,6 +13,7 @@ const bagRouter = require('./src/routes/bag.routes')
 const catchRouter = require('./src/routes/catch.routes')
 const pokemonRouter = require('./src/routes/pokemon.routes')
 const trainerRouter = require('./src/routes/trainer.routes')
+const storageRouter = require('./src/routes/storage.routes')
 
 app.all("*", (req, res, next) => {
     const method = req.method;
@@ -31,6 +32,8 @@ app.all("*", (req, res, next) => {
   app.use(pokemonRouter);
   //trainer routes
   app.use(trainerRouter);
+  //storage routes
+  app.use(storageRouter);
 
   // not found End-point
 app.all("*", (req, res) => {
