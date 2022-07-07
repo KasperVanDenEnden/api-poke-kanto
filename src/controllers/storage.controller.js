@@ -7,7 +7,7 @@ const { json } = require("body-parser");
 
 const getStorageIdQuery = "SELECT * FROM trainerStorage WHERE trainerId = ?;"
 const getStorageQuery = "SELECT * FROM storage WHERE storageId = ?;"
-const massReleaseQuery = "DELETE FROM storage WHERE favorite = 0;"
+const massReleaseQuery = "DELETE FROM storage WHERE favorite = 0 AND shiny = 0;"
 const moneyReleaseQuery = "UPDATE trainer SET saldo = saldo + ? WHERE trainerId = ?;"
 
 module.exports = {

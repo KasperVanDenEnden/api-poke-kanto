@@ -82,6 +82,7 @@ module.exports = {
     
         if (catchBool) {
             let caughtPokemon = functions.caughtPokemon(dexNr,pokemon,type,level,gender,shinyBool);
+            logger.info(caughtPokemon);
             
          
             dbconnection.getConnection((err,connection) => {

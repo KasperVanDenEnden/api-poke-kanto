@@ -382,14 +382,12 @@ module.exports = {
             }) 
             logger.info("CHECK 6");
         } else {
-            logger.info("CHECK 7");
          
 
             res.status(400).json({
                 status:400,
                 message: message
             })
-            logger.info("CHECK 8");
         }
         logger.info("CHECK 9");
     },
