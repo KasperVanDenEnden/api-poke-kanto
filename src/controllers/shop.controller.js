@@ -108,7 +108,7 @@ module.exports = {
             })
         })
     },
-    sellItemFromBag: (req, res, next) => {
+    sellItemFromBag: (req,res,next) => {
         const {item,quantity} = req.body;
         const {bagId} = req;
     

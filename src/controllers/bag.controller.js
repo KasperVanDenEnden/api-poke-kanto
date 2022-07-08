@@ -8,7 +8,7 @@ const getBagByIdQuery = "SELECT bagId FROM trainerBag WHERE trainerId = ?;";
 
 
 module.exports = {
-  getBagById: (req, res, next) => {
+  getBagById: (req,res,next) => {
     const {tokenId} = req;
     dbconnection.getConnection((err, connection) => {
       if (err) next(err);
@@ -30,7 +30,7 @@ module.exports = {
       });
     });
   },
-  getbagInventoryQuery: (req, res, next) => {
+  getbagInventoryQuery: (req,res,next) => {
     const bagId = req.bagId;
     const { sort } = req.query;
 
@@ -53,7 +53,7 @@ module.exports = {
     req.getBagInventoryQuery = getBagInventoryQuery;
     next();
   },
-  getBagInventory: (req, res, next) => {
+  getBagInventory: (req,res,next) => {
     const { getBagInventoryQuery } = req;
     dbconnection.getConnection((err, connection) => {
       if (err) next(err);

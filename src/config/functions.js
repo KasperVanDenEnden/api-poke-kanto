@@ -1,9 +1,10 @@
 const dbconnection = require("../../database/dbconnection");
 const assert = require("assert");
-const { logger } = require("./config");
+const logger = require("./config").logger;
 
 const threwBall = "UPDATE bag SET quantity = quantity - 1 WHERE bagId = ? AND item = ?;"
 const itemsLeft = "SELECT quantity FROM bag WHERE bagId = ? AND item = ?;"
+
 module.exports = {
     getRandom6Digits() {
         const random6Digits = Math.floor(100000 + Math.random() * 900000);

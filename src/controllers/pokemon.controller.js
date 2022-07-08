@@ -6,7 +6,7 @@ const functions = require("../config/functions");
 const ot = require("../config/ot");
 
 module.exports = {
-  getPokedexQuery: (req, res, next) => {
+  getPokedexQuery: (req,res,next) => {
     logger.info("getPokedex aangeroepen");
     let getPokedexQuery = "SELECT * FROM pokedex";
     const { dexNr, pokemon, type, evolution, limit } = req.query;
@@ -50,7 +50,7 @@ module.exports = {
     logger.info(getPokedexQuery);
     next();
   },
-  getPokedex: (req, res, next) => {
+  getPokedex: (req,res,next) => {
     const { getPokedexQuery } = req;
     dbconnection.getConnection((err, connection) => {
       if (err) next(err);
@@ -60,6 +60,16 @@ module.exports = {
         connection.release();
 
         if (functions.isNotEmptyResults(results)) {
+          results.forEach(element => {
+            delete element.maxLevelCatch;
+            delete element.minLevelCatch;
+            delete element.catchRate;
+            if (element.evolution === "none") {
+              delete element.evolution;
+            }
+
+          });
+
           res.status(200).json({
             status: 200,
             results: results,
