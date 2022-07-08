@@ -112,54 +112,82 @@ module.exports = {
       })
     })
   },
-  putInSlot: (req,res,next) => {
-    const {putInSlot,slot,tokenId} = req;
-      if (slot <=6 && slot > 0) {
-        const slotPokemon = putInSlot.pokemon + "("+putInSlot.lvl+")";
+  emptySlot: (req,res,next) => {
+    const {tokenId} = req;
+    const {slot} = req.query;
+    const emptySlotQuery = functions.emptySlotQuery(slot);
 
-        dbconnection.getConnection((err,connection) => {
-          if (err) next(err);
-            const checkAlreadyInSlotQuery = functions.checkAlreadyInSlotQuery(slot);
+    dbconnection.getConnection((err,connection) => {
+      if (err) next(err);
 
-            connection.query(checkAlreadyInSlotQuery,[slotPokemon,tokenId],(error,result,fields) => {
-              if (error) next(error);
-
-              logger.info("result trainerId " + result[0]);
-              if (functions.isNotEmpty(result)) {
-                
-                const putInSlotQuery = functions.putInSlotQuery(slot);
-
-                connection.query(putInSlotQuery,[slotPokemon,tokenId],(error,result,fields) => {
-                  if (error) next(error);
-                  connection.release();
-                    logger.info(result.affectedRows);
-                  if (functions.affectedRow(result.affectedRows)) {
-                    res.status(200).json({
-                      status:200,
-                      message: "Your Pokèmon " + slotPokemon + " has been put in slot " + slot 
-                    })
-                  } else {
-                    res.status(401).json({
-                      status:400,
-                      message: "Your Pokèmon is not eager to go with you on your travels. He stays in storage."
-                    })
-                  }
-                })
-              } else {
-                connection.release();
-                res.status(400).json({
-                  status:400,
-                  message: "The Pokèmon " + slotPokemon + " is already in a slot!"
-                })
-              }
-            })
-        })
-      } else {
-        res.status(401).json({
-          status:401,
-          message: "Slot " + slot + "does not exist! [1-6]"
-        })
-      }
+      connection.query(emptySlotQuery,[tokenId],(error,result,fields) => {
+        if (error) next(error);
+        connection.release();
+        logger.info(result);
+        if(functions.updateSuccesfull(result.info)) {
+            res.status(200).json({
+              status:200,
+              message:"Slot " + slot + " is now empty!"
+            })          
+        } else {
+          res.status(400).json({
+            status:400,
+            message: "Slot " + slot + " was already empty!"
+          })
+        }
+      })
+    })
   },
 
 };
+
+
+
+// putInSlot: (req,res,next) => {
+//   const {putInSlot,slot,tokenId} = req;
+//     if (slot <=6 && slot > 0) {
+//       const slotPokemon = putInSlot.pokemon + "("+putInSlot.lvl+")";
+
+//       dbconnection.getConnection((err,connection) => {
+//         if (err) next(err);
+//           const checkAlreadyInSlotQuery = functions.checkAlreadyInSlotQuery(slot);
+
+//           connection.query(checkAlreadyInSlotQuery,[slotPokemon,tokenId],(error,result,fields) => {
+//             if (error) next(error);
+
+//             if (functions.isNotEmpty(result)) {
+              
+//               const putInSlotQuery = functions.putInSlotQuery(slot);
+
+//               connection.query(putInSlotQuery,[slotPokemon,tokenId],(error,result,fields) => {
+//                 if (error) next(error);
+//                 connection.release();
+//                   logger.info(result.affectedRows);
+//                 if (functions.affectedRow(result.affectedRows)) {
+//                   res.status(200).json({
+//                     status:200,
+//                     message: "Your Pokèmon " + slotPokemon + " has been put in slot " + slot 
+//                   })
+//                 } else {
+//                   res.status(401).json({
+//                     status:400,
+//                     message: "Your Pokèmon is not eager to go with you on your travels. He stays in storage."
+//                   })
+//                 }
+//               })
+//             } else {
+//               connection.release();
+//               res.status(400).json({
+//                 status:400,
+//                 message: "The Pokèmon " + slotPokemon + " is already in a slot!"
+//               })
+//             }
+//           })
+//       })
+//     } else {
+//       res.status(401).json({
+//         status:401,
+//         message: "Slot " + slot + "does not exist! [1-6]"
+//       })
+//     }
+// },

@@ -141,6 +141,51 @@ module.exports = {
         const strEnd = ' = ? WHERE trainerId = ?;';
         return strBegin + this.getSlotString(slot) + strEnd;
     },
+    emptySlotQuery(slot) {
+        const strBegin = 'UPDATE trainer SET ';
+        const strEnd = ' WHERE trainerId = ?;';
+        if (slot == 1) { return strBegin + "slotOne = slotTwo, slotTwo = slotThree, slotThree = slotFour, slotFour = slotFive, slotFive = slotSix, slotSix = '-'" + strEnd;}
+        if (slot == 2) { return strBegin + "slotTwo = slotThree, slotThree = slotFour, slotFour = slotFive, slotFive = slotSix, slotSix = '-'" + strEnd;}
+        if (slot == 3) { return strBegin + "slotThree = slotFour, slotFour = slotFive, slotFive = slotSix, slotSix = '-'" + strEnd;}
+        if (slot == 4) { return strBegin + "slotFour = slotFive, slotFive = slotSix, slotSix = '-'" + strEnd;}
+        if (slot == 5) { return strBegin + "slotFive = slotSix, slotSix = '-'" + strEnd;}
+        if (slot == 6) { return strBegin + "slotSix = ''" + strEnd;}
+ 
+    },
+    firstEmptySlotQuery(slotOne,slotTwo,slotThree,slotFour,slotFive,slotSix) {
+        const slotsUsed = [];
+        slotsUsed.push(slotOne,slotTwo,slotThree,slotFour,slotFive,slotSix);
+        let slotsUsedCount = 0;
+        
+        slotsUsed.forEach(element => {
+            if (this.isNotEmpty(element)) {
+                slotsUsedCount++;
+            }
+        });
+        logger.info('slotsUsedCount: ' + slotsUsedCount );
+        const strBegin = "UPDATE trainer SET "
+        const strEnd = " WHERE trainerId = ?;"
+
+        if (slotsUsedCount == 0) { return strBegin + "slotOne = ?" + strEnd;}
+        if (slotsUsedCount == 1) { return strBegin + "slotTwo = ?" + strEnd;}
+        if (slotsUsedCount == 2) { return strBegin + "slotThree = ?" + strEnd;}
+        if (slotsUsedCount == 3) { return strBegin + "slotFour = ?" + strEnd;}
+        if (slotsUsedCount == 4) { return strBegin + "slotFive = ?" + strEnd;}
+        if (slotsUsedCount == 5) { return strBegin + "slotSix = ?" + strEnd;}
+        if (slotsUsedCount == 6) { return "Slots full!";}
+
+    },
+    pokemonAlreadyInSlot(slotOne,slotTwo,slotThree,slotFour,slotFive,slotSix,slotPokemon) {
+        const slots = [];
+        slots.push(slotOne,slotTwo,slotThree,slotFour,slotFive,slotSix);
+        let inSlot = false;
+        slots.forEach(element => {
+            if (element === slotPokemon) {
+                inSlot = true;
+            }
+        });
+        return inSlot;
+    },
 
     // lotery functions
     getTicketMatchingNumbers(ticket,trainerId) {
