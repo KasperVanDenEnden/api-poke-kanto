@@ -131,6 +131,17 @@ module.exports = {
         if (slot == 5) { return "slotFive";}
         if (slot == 6) { return "slotSix";}
     },
+    checkAlreadyInSlotQuery(slot) {
+        const strBegin = 'SELECT trainerId FROM trainer WHERE ';
+        const strEnd = ' = ? AND trainerId = ?;';
+        return strBegin + this.getSlotString(slot) + strEnd;
+    },
+    putInSlotQuery(slot) {
+        const strBegin = 'UPDATE trainer SET ';
+        const strEnd = ' = ? WHERE trainerId = ?;';
+        return strBegin + this.getSlotString(slot) + strEnd;
+    },
+
     // lotery functions
     getTicketMatchingNumbers(ticket,trainerId) {
         const ticketNumbers = ticket.split("");

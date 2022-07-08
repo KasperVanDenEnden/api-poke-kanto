@@ -6,8 +6,7 @@ const functions = require("../config/functions");
 const ot = require("../config/ot");
 
 const getPokemonFromStorageQuery = 'SELECT * FROM storage WHERE storageId = ? AND pokemon = ? AND lvl = ?';
-let putInSlotQuery = "UPDATE trainer SET ";
-let checkAlreadyInSlotQuery = 'SELECT trainerId FROM trainer WHERE '
+
 module.exports = {
   getPokedexQuery: (req,res,next) => {
     logger.info("getPokedex aangeroepen");
@@ -117,20 +116,18 @@ module.exports = {
     const {putInSlot,slot,tokenId} = req;
       if (slot <=6 && slot > 0) {
         const slotPokemon = putInSlot.pokemon + "("+putInSlot.lvl+")";
-        const slotString = functions.getSlotString(slot);
-        checkAlreadyInSlotQuery += slotString;
-        checkAlreadyInSlotQuery += "= ? AND trainerId = ?;";
-        logger.info(checkAlreadyInSlotQuery);
+
         dbconnection.getConnection((err,connection) => {
           if (err) next(err);
+            const checkAlreadyInSlotQuery = functions.checkAlreadyInSlotQuery(slot);
 
             connection.query(checkAlreadyInSlotQuery,[slotPokemon,tokenId],(error,result,fields) => {
               if (error) next(error);
 
               logger.info("result trainerId " + result[0]);
               if (functions.isNotEmpty(result)) {
-                putInSlotQuery += slotString;
-                putInSlotQuery += '= ? WHERE trainerId = ?;';
+                
+                const putInSlotQuery = functions.putInSlotQuery(slot);
 
                 connection.query(putInSlotQuery,[slotPokemon,tokenId],(error,result,fields) => {
                   if (error) next(error);
@@ -152,7 +149,7 @@ module.exports = {
                 connection.release();
                 res.status(400).json({
                   status:400,
-                  message: "The Pokèmon " + slotPokemon + " is already in slot " + slot
+                  message: "The Pokèmon " + slotPokemon + " is already in a slot!"
                 })
               }
             })
