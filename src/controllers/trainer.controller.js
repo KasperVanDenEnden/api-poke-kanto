@@ -8,7 +8,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const jwtSecretKey = require("../config/config").jwtSecretKey;
 
-const loginQuery = "SELECT trainerId, pwd FROM trainer WHERE trainerId = ?;";
+const loginQuery =
+  "SELECT trainerId, pwd, name FROM trainer WHERE trainerId = ?;";
 const addTrainerQuery =
   "INSERT INTO `trainer` (`name`,`pwd`,`trainerId`) VALUES (?,?,?);";
 const getNewTrainerQuery =
@@ -17,7 +18,7 @@ const nicknameExistQuery = "SELECT name FROM trainer WHERE name =?;";
 const trainerIdExistQuery =
   "SELECT trainerId FROM trainer WHERE trainerId = ?;";
 const changePwdQuery = "UPDATE trainer SET pwd = ? WHERE trainerId = ?;";
-const getTrainerCardQuery = 'SELECT * FROM trainer WHERE trainerId = ?;';
+const getTrainerCardQuery = "SELECT * FROM trainer WHERE trainerId = ?;";
 
 module.exports = {
   checkNewTrainer: (req, res, next) => {
@@ -34,8 +35,7 @@ module.exports = {
           [nickname],
           (error, result, fields) => {
             if (error) next(error);
-            logger.info("Check 1: " + result);
-            if (Object.keys(result).length === 1) {
+            if (functions.isNotEmpty(result)) {
               res.status(401).json({
                 status: 401,
                 message: "Trainer with this name already exists.",
@@ -60,14 +60,13 @@ module.exports = {
       if (err) next(err);
 
       const newTrainerId = functions.getRandom6Digits();
-      // const newTrainerId = "111111";
       connection.query(
         trainerIdExistQuery,
         [newTrainerId],
         (error, result, fields) => {
           if (error) next(error);
 
-          if (Object.keys(result).length === 1) {
+          if (functions.isNotEmpty(result)) {
             res.status(400).json({
               status: 400,
               message:
@@ -75,14 +74,12 @@ module.exports = {
             });
           } else {
             trainerId = newTrainerId;
-            logger.info("good samaritan ");
             count = 10;
             connection.query(
               addTrainerQuery,
               [nickname, pwd, trainerId],
               (error, result, fields) => {
                 if (error) next(error);
-                logger.info("Check 5 " + trainerId);
                 connection.query(
                   getNewTrainerQuery,
                   [trainerId],
@@ -175,7 +172,8 @@ module.exports = {
               if (result || pwd === trainer.pwd) {
                 jwt.sign(
                   {
-                    trainerId: trainer.trainerId,
+                    tokenId: trainer.trainerId,
+                    trainer: trainer.name,
                   },
                   process.env.JWT_SECRET,
                   {
@@ -219,7 +217,7 @@ module.exports = {
     }
   },
   validateToken: (req, res, next) => {
-    logger.info('Validate token');
+    logger.info("Validate token");
     const authHeader = req.headers.authorization;
     if (authHeader) {
       const token = authHeader.substring(7, authHeader.length);
@@ -230,7 +228,9 @@ module.exports = {
             message: "Unauthorized",
           });
         } else {
-          req.tokenId = payload.trainerId;
+          const { tokenId, trainer } = payload;
+          req.tokenId = tokenId;
+          req.trainer = trainer;
           next();
         }
       });
@@ -243,28 +243,30 @@ module.exports = {
   },
   getTrainerCard: (req, res, next) => {
     const tokenId = req.tokenId;
-    dbconnection.getConnection((err,connection) => {
+    dbconnection.getConnection((err, connection) => {
       if (err) next(err);
-      connection.query(getTrainerCardQuery,[tokenId],(error,result,fields) => {
-        if (error) next(error);
-        connection.release();
-        delete result[0].pwd;
-        delete result[0].experience; 
-        if (functions.isNotEmpty(result)) {
-          res.status(200).json({
-            status:200,
-            result:result
-          })
-        } else {
-          res.status(400).json({
-            status:400,
-            message:"You seem to have lost your Trainer Card. You will have to request a new one!"
-          })
+      connection.query(
+        getTrainerCardQuery,
+        [tokenId],
+        (error, result, fields) => {
+          if (error) next(error);
+          connection.release();
+          delete result[0].pwd;
+          delete result[0].experience;
+          if (functions.isNotEmpty(result)) {
+            res.status(200).json({
+              status: 200,
+              result: result,
+            });
+          } else {
+            res.status(400).json({
+              status: 400,
+              message:
+                "You seem to have lost your Trainer Card. You will have to request a new one!",
+            });
+          }
         }
-
-      })
-
-    })
-
+      );
+    });
   },
 };

@@ -42,8 +42,8 @@ module.exports = {
         if (gender === 1) {return "♂";}
         return "♀";
     },
-    caughtPokemon(dexNr,pokemon,type,level,gender,shinyBool) {
-        let caughtPokemon = {dexNr,pokemon,type,level,gender};
+    caughtPokemon(dexNr,pokemon,type,level,gender,shinyBool,trainer) {
+        let caughtPokemon = {dexNr,pokemon,type,level,gender,trainer};
         if (shinyBool) {
             caughtPokemon.shiny = 1;
         }

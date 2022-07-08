@@ -9,8 +9,7 @@ const getBagByIdQuery = "SELECT bagId FROM trainerBag WHERE trainerId = ?;";
 
 module.exports = {
   getBagById: (req, res, next) => {
-    const tokenId = req.tokenId;
-    logger.info(tokenId);
+    const {tokenId} = req;
     dbconnection.getConnection((err, connection) => {
       if (err) next(err);
 
@@ -52,7 +51,6 @@ module.exports = {
     }
     getBagInventoryQuery += ";";
     req.getBagInventoryQuery = getBagInventoryQuery;
-    logger.info(getBagInventoryQuery);
     next();
   },
   getBagInventory: (req, res, next) => {
