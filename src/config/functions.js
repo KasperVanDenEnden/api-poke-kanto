@@ -122,6 +122,15 @@ module.exports = {
             return row.trainerId;
         })
     },
+    getSlotString(slot) {
+        logger.info(slot);
+        if (slot == 1) { return "slotOne";}
+        if (slot == 2) { return "slotTwo";}
+        if (slot == 3) { return "slotThree";}
+        if (slot == 4) { return "slotFour";}
+        if (slot == 5) { return "slotFive";}
+        if (slot == 6) { return "slotSix";}
+    },
     // lotery functions
     getTicketMatchingNumbers(ticket,trainerId) {
         const ticketNumbers = ticket.split("");

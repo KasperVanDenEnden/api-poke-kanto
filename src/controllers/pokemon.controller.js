@@ -5,6 +5,9 @@ const logger = require("../config/config").logger;
 const functions = require("../config/functions");
 const ot = require("../config/ot");
 
+const getPokemonFromStorageQuery = 'SELECT * FROM storage WHERE storageId = ? AND pokemon = ? AND lvl = ?';
+let putInSlotQuery = "UPDATE trainer SET ";
+let checkAlreadyInSlotQuery = 'SELECT trainerId FROM trainer WHERE '
 module.exports = {
   getPokedexQuery: (req,res,next) => {
     logger.info("getPokedex aangeroepen");
@@ -84,4 +87,82 @@ module.exports = {
       });
     });
   },
+  getPokemon: (req,res,next) => {
+    const {storageId} = req;
+    const {pokemon,lvl,slot} = req.query;
+    logger.info("StorageId: "+ storageId);
+
+    dbconnection.getConnection((err,connection) => {
+      if (err) next(err);
+
+      connection.query(getPokemonFromStorageQuery,[storageId,pokemon,lvl],(error,result,fields) =>{
+        if (error) next(error);
+        connection.release();
+
+        if(functions.isNotEmpty(result)) {
+          req.putInSlot = result[0];
+          req.slot = slot;
+          next();
+        } else {
+          res.status(400).json({
+            status:400,
+            message:"Can't find the Pokèmon " + pokemon + " with lvl " + lvl,
+            info: "You can only put a favorite Pokèmon in your slot!"
+          })
+        }
+      })
+    })
+  },
+  putInSlot: (req,res,next) => {
+    const {putInSlot,slot,tokenId} = req;
+      if (slot <=6 && slot > 0) {
+        const slotPokemon = putInSlot.pokemon + "("+putInSlot.lvl+")";
+        const slotString = functions.getSlotString(slot);
+        checkAlreadyInSlotQuery += slotString;
+        checkAlreadyInSlotQuery += "= ? AND trainerId = ?;";
+        logger.info(checkAlreadyInSlotQuery);
+        dbconnection.getConnection((err,connection) => {
+          if (err) next(err);
+
+            connection.query(checkAlreadyInSlotQuery,[slotPokemon,tokenId],(error,result,fields) => {
+              if (error) next(error);
+
+              logger.info("result trainerId " + result[0]);
+              if (functions.isNotEmpty(result)) {
+                putInSlotQuery += slotString;
+                putInSlotQuery += '= ? WHERE trainerId = ?;';
+
+                connection.query(putInSlotQuery,[slotPokemon,tokenId],(error,result,fields) => {
+                  if (error) next(error);
+                  connection.release();
+                    logger.info(result.affectedRows);
+                  if (functions.affectedRow(result.affectedRows)) {
+                    res.status(200).json({
+                      status:200,
+                      message: "Your Pokèmon " + slotPokemon + " has been put in slot " + slot 
+                    })
+                  } else {
+                    res.status(401).json({
+                      status:400,
+                      message: "Your Pokèmon is not eager to go with you on your travels. He stays in storage."
+                    })
+                  }
+                })
+              } else {
+                connection.release();
+                res.status(400).json({
+                  status:400,
+                  message: "The Pokèmon " + slotPokemon + " is already in slot " + slot
+                })
+              }
+            })
+        })
+      } else {
+        res.status(401).json({
+          status:401,
+          message: "Slot " + slot + "does not exist! [1-6]"
+        })
+      }
+  },
+
 };
