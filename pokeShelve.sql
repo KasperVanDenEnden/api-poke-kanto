@@ -70,6 +70,7 @@ CREATE TABLE `storage` (
     `favorite` int NOT NULL DEFAULT 0,
     `shiny` tinyint NOT NULL DEFAULT 0,
     `gender` varchar(1) NOT NULL DEFAULT '♂',
+    `ot` varchar(10) NOT NULL DEFAULT 'Ash',
     CONSTRAINT FK_StorageTrainerStorage FOREIGN KEY (storageId) REFERENCES `trainerStorage` (storageId) ON UPDATE CASCADE ON DELETE CASCADE
 );
 

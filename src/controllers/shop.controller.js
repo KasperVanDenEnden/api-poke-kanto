@@ -22,10 +22,10 @@ const newItemBoughtQuery = "INSERT INTO bag (bagId,item,quantity,sort) VALUES (?
 
 
 // lotery queries
-const checkIfTicketHasBeenDrawnTodayQuery = 'SELECT * FROM lotery WHERE trainerId = ? AND day = CURDATE();';
+const checkIfTicketHasBeenDrawnTodayQuery = 'SELECT * FROM lotery WHERE trainerId = ? AND day = (CURRENT_DATE);';
 const loteryGivePrizeQuery = 'UPDATE bag SET quantity = quantity + ? WHERE item = ? AND bagId = ?;';
-const firstTicketOfTheDayQuery = 'INSERT INTO lotery (trainerId,day) VALUES (?,CURDATE());'
-const anotherTicketOfTheDayQuery = 'UPDATE lotery SET tickets = tickets + 1 WHERE trainerId = ? AND day = CURDATE();';
+const firstTicketOfTheDayQuery = 'INSERT INTO lotery (trainerId,day) VALUES (?,(CURRENT_DATE));'
+const anotherTicketOfTheDayQuery = 'UPDATE lotery SET tickets = tickets + 1 WHERE trainerId = ? AND day = (CURRENT_DATE);';
 
 
 module.exports = { 
@@ -251,16 +251,16 @@ module.exports = {
             connection.query(checkIfTicketHasBeenDrawnTodayQuery, [tokenId], (error,result,fields) => {
                 if (error) next(error);
                 
-                const {trainerId,tickets} = result[0];
-                if (parseInt(tickets) < 10) {
-                    if (trainerId === tokenId) {
+                if (functions.isNotEmpty(result)) {
+                    const {trainerId,tickets} = result[0];
+
+                    if (parseInt(tickets) < 10) {
                         connection.query(anotherTicketOfTheDayQuery,[tokenId], (error,result,fields) => {
                             if (error) next(error);
                             connection.release();
                             const affectedRow = result.affectedRows;
                             logger.error(affectedRow);
                             if (functions.affectedRow(affectedRow)) {
-                      
                                 next();
                             } else {
                                 res.status(401).json({
@@ -270,18 +270,19 @@ module.exports = {
                             }
                         })
                     } else {
-                        connection.query(firstTicketOfTheDayQuery, [tokenId], (error,result,fields) =>{
-                            if (error) next(error);
                             connection.release();
-                            next();
-                        })
+                            res.status(401).json({
+                                status:401,
+                                message: 'You already got 10 tickets today! Come back tomorrow!'
+                            })
                     }
                 } else {
+                   
+                    connection.query(firstTicketOfTheDayQuery, [tokenId], (error,result,fields) =>{
+                        if (error) next(error);
                         connection.release();
-                        res.status(401).json({
-                            status:401,
-                            message: 'You already got 10 tickets today! Come back tomorrow!'
-                        })
+                        next();
+                    })
                 }
             })
         })
@@ -361,7 +362,6 @@ module.exports = {
                                             message: message
                                         })
                                     } else {
-                                        logger.info("CHECK 19");
                                         message += " Team Rocket appeared and stole your prize of " + quantity + " " + prize + ". Tough luck!";
                                         res.status(401).json({
                                             status: 401,
@@ -369,27 +369,18 @@ module.exports = {
                                         })
                                         res.end();
                                     }
-                                    logger.info("CHECK 1");
                                 })
                             }
-                            logger.info("CHECK 2");
                         })
-                        logger.info("CHECK 3");
                     })
-                    logger.info("CHECK 4");
                 }
-                logger.info("CHECK 5");
             }) 
-            logger.info("CHECK 6");
         } else {
-         
-
             res.status(400).json({
                 status:400,
                 message: message
             })
         }
-        logger.info("CHECK 9");
     },
     
 

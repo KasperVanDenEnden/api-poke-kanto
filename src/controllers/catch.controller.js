@@ -4,10 +4,10 @@ const { info } = require("console");
 const logger = require("../config/config").logger;
 const functions = require("../config/functions");
 
-const catchedPokemonQuery = "INSERT INTO storage (storageId,pokemon,lvl,gender) VALUES (?,?,?,?);";
-const catchedShinyPokemonQuery = "INSERT INTO storage (storageId,pokemon,lvl,gender,shiny) VALUES (?,?,?,?,1);"
+const catchedPokemonQuery = "INSERT INTO storage (storageId,pokemon,lvl,gender,ot) VALUES (?,?,?,?,?);";
+const catchedShinyPokemonQuery = "INSERT INTO storage (storageId,pokemon,lvl,gender,ot,shiny) VALUES (?,?,?,?,?,1);"
 const getPokemonByDexNrQuery = "SELECT * FROM pokedex WHERE dexNr = ?;"
-const itemsLeft = "SELECT quantity FROM bag WHERE bagId = ? AND item = ?;"
+const itemsLeft = "SELECT quantity FROM bag WHERE bagId = ? AND item = ? AND quantity > 0;"
 
 module.exports = { 
     shiny: (req,res,next) => {
@@ -57,8 +57,9 @@ module.exports = {
             connection.query(itemsLeft,[bagId,item],(error,result,fields) => {
                 if (error) throw error;
                 connection.release();
-                const {quantity} = result[0];
-                if (quantity > 0) {
+             
+                if (functions.isNotEmpty(result)) {
+                    const {quantity} = result[0];
                     req.itemLeft = quantity -1;
                     next();
                 } else {
@@ -67,12 +68,11 @@ module.exports = {
                         message: "No more " + item + " left in your inventory"
                     })
                 }
-                
             })
         })
     },
     catchPokeball: (req,res,next) => {
-        const {catchedQuery,shinyBool,storageId,bagId,itemLeft} = req;
+        const {catchedQuery,shinyBool,storageId,bagId,itemLeft,trainer} = req;
         const {dexNr,pokemon,type,minLevelCatch,maxLevelCatch,catchRate} = req.pokemon;
         const catchBool = functions.catchPokeball(catchRate);
         let level = Math.floor(Math.random() * (maxLevelCatch - minLevelCatch + minLevelCatch) + minLevelCatch);
@@ -81,17 +81,15 @@ module.exports = {
         const ballString = (functions.ballString(req.originalUrl));
     
         if (catchBool) {
-            let caughtPokemon = functions.caughtPokemon(dexNr,pokemon,type,level,gender,shinyBool);
+            let caughtPokemon = functions.caughtPokemon(dexNr,pokemon,type,level,gender,shinyBool,trainer);
             logger.info(caughtPokemon);
             
-         
             dbconnection.getConnection((err,connection) => {
                 if (err) next(err);
                
-                connection.query(catchedQuery,[storageId,pokemon,level,gender],(error,result,fields) => {
+                connection.query(catchedQuery,[storageId,pokemon,level,gender,trainer],(error,result,fields) => {
                     if (error) next(error);
                     connection.release();
-              
                     
                     if (functions.affectedRow(result.affectedRows)) {
                         res.status(200).json({

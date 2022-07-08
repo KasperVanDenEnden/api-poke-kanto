@@ -3,7 +3,7 @@ require("dotenv").config();
 const logger = require("../src/config/config").logger;
 
 const pool = mysql.createPool({
-    connectionLimit: 10,
+    connectionLimit: 200,
     waitForConnections: true,
     queueLimit: 0,
     multipleStatements: true,
