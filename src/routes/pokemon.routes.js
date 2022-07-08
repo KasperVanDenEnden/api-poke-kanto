@@ -4,11 +4,11 @@ const pokemonController = require("../controllers/pokemon.controller");
 const trainerController = require("../controllers/trainer.controller");
 
 
+
 router.get('/pokedex',trainerController.validateToken,pokemonController.getPokedexQuery,pokemonController.getPokedex);
 
 router.put('/train');
 router.put('/evolve',);
-router.put('/favorite');
 router.put('/slot');
 
 

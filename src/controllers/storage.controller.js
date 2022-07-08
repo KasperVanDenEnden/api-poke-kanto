@@ -4,6 +4,7 @@ const { info } = require("console");
 const logger = require("../config/config").logger;
 const functions = require("../config/functions");
 const { json } = require("body-parser");
+const { nextTick } = require("process");
 
 const getStorageIdQuery = "SELECT * FROM trainerStorage WHERE trainerId = ?;"
 const getStorageQuery = "SELECT * FROM storage WHERE storageId = ?;"
@@ -11,7 +12,7 @@ const massReleaseQuery = "DELETE FROM storage WHERE favorite = 0 AND shiny = 0;"
 const moneyReleaseQuery = "UPDATE trainer SET saldo = saldo + ? WHERE trainerId = ?;"
 
 module.exports = {
-    getStorage: (req, res, next) => {
+    getStorage: (req,res,next) => {
         const tokenId = req.tokenId;
 
         dbconnection.getConnection((err,connection) => {
@@ -35,7 +36,7 @@ module.exports = {
             })
         })
     },
-    getStoragePokemon: (req, res, next) => {
+    getStoragePokemon: (req,res,next) => {
         const {storageId} = req;
 
         dbconnection.getConnection((err,connection) => {
@@ -59,7 +60,119 @@ module.exports = {
             })
         })
     },
-    massRelease: (req, res, next) => {
+    checkFavoriteQuery: (req,res,next) => {
+        let checkFavoriteQuery = "SELECT favorite FROM storage WHERE storageId = ? AND favorite = 0";
+        const {pokemon, gender, lvl } = req.query;
+            if (pokemon || gender || lvl ) {
+                checkFavoriteQuery += " AND ";
+
+                if (pokemon) {
+                    checkFavoriteQuery += `pokemon = '${pokemon}'`;
+                }
+
+                if (pokemon && (gender || lvl)) {
+                    checkFavoriteQuery += " AND ";
+                }
+
+                if (gender) {
+                    checkFavoriteQuery += `gender = '${gender}'`;
+                }
+
+                if (gender && lvl) {
+                    checkFavoriteQuery += " AND ";
+                }
+                
+                if (lvl) {
+                    checkFavoriteQuery += `lvl = ${lvl}`;
+                }
+            }
+        checkFavoriteQuery += ";";
+        req.checkFavoriteQuery = checkFavoriteQuery;
+        next();
+    },
+    getFavoriteQuery: (req,res,next) => {
+        let favoriteQuery = "UPDATE storage SET favorite = ? WHERE storageId = ?";
+        const {pokemon, gender, lvl } = req.query;
+            if (pokemon || gender || lvl) {
+                favoriteQuery += " AND "
+                
+                if (pokemon) {
+                    favoriteQuery += `pokemon = '${pokemon}'`;
+                }
+
+                if (pokemon && (gender || lvl)) {
+                    favoriteQuery += " AND ";
+                }
+
+                if (gender) {
+                    favoriteQuery += `gender = '${gender}'`;
+                }
+
+                if (gender && lvl) {
+                    favoriteQuery += " AND ";
+                }
+                
+                if (lvl) {
+                    favoriteQuery += `lvl = ${lvl}`;
+                }
+            }
+        favoriteQuery += ";";
+        req.favoriteQuery = favoriteQuery;
+        next();
+    },
+    favorite: (req,res,next) => {
+        const {storageId,favoriteQuery,checkFavoriteQuery} = req;
+        const {pokemon, gender, lvl } = req.query;
+        dbconnection.getConnection((err,connection) => {
+            if (err) next(err);
+
+            connection.query(checkFavoriteQuery,[storageId],(error,result,fields) => {
+                if (error) next();
+
+                let favorite;
+                if (functions.isNotEmpty(result)) {
+                    favorite = 1;
+
+                    connection.query(favoriteQuery,[favorite,storageId],(error,result,fields) => {
+                        if (error) next(error);
+                        connection.release();
+
+                        if (functions.affectedRow(result.affectedRows)) {
+                            res.status(200).json({
+                                status: 200,
+                                message: "Your Pokèmon " + pokemon + " is now one of your favorite!"
+                            })
+                        } else {
+                            res.status(400).json({
+                                status:400,
+                                message: "Could not find the Pokèmon you wanted to favorite!"
+                            })
+                        }
+                    })
+                } else {
+                    favorite = 0;
+
+                    connection.query(favoriteQuery,[favorite,storageId],(error,result,fields) => {
+                        if (error) next(error);
+                        connection.release();
+
+                        if (functions.affectedRow(result.affectedRows)) {
+                            res.status(200).json({
+                                status: 200,
+                                message: "Your Pokèmon " + pokemon + " is no longer one of your favorite!"
+                            })
+                        } else {
+                            res.status(400).json({
+                                status:400,
+                                message: "Could not find the Pokèmon you wanted to unfavorite!"
+                            })
+                        }
+                    })
+                }
+            })
+        })
+    },
+    massRelease: (req,res,next) => {
         const {storageId,tokenId} = req;
 
         dbconnection.getConnection((err,connection) => {

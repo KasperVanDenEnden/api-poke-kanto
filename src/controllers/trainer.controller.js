@@ -21,7 +21,7 @@ const changePwdQuery = "UPDATE trainer SET pwd = ? WHERE trainerId = ?;";
 const getTrainerCardQuery = "SELECT * FROM trainer WHERE trainerId = ?;";
 
 module.exports = {
-  checkNewTrainer: (req, res, next) => {
+  checkNewTrainer: (req,res,next) => {
     const { nickname, pwd } = req.body;
     try {
       assert(typeof nickname === "string", "Nickname must be a string");
@@ -53,7 +53,7 @@ module.exports = {
       });
     }
   },
-  addTrainer: (req, res, next) => {
+  addTrainer: (req,res,next) => {
     const { nickname, pwd } = req.body;
 
     dbconnection.getConnection((err, connection) => {
@@ -102,7 +102,7 @@ module.exports = {
       );
     });
   },
-  pwdChange: (req, res, next) => {
+  pwdChange: (req,res,next) => {
     const { trainerId, pwd, pwdNew, pwdCopy } = req.body;
     const tokenId = req.tokenId;
 
@@ -151,7 +151,7 @@ module.exports = {
       });
     }
   },
-  login: (req, res, next) => {
+  login: (req,res,next) => {
     const { trainerId, pwd } = req.body;
 
     try {
@@ -216,7 +216,7 @@ module.exports = {
       });
     }
   },
-  validateToken: (req, res, next) => {
+  validateToken: (req,res,next) => {
     logger.info("Validate token");
     const authHeader = req.headers.authorization;
     if (authHeader) {
@@ -241,7 +241,7 @@ module.exports = {
       });
     }
   },
-  getTrainerCard: (req, res, next) => {
+  getTrainerCard: (req,res,next) => {
     const tokenId = req.tokenId;
     dbconnection.getConnection((err, connection) => {
       if (err) next(err);
