@@ -102,7 +102,7 @@ module.exports = {
       );
     });
   },
-  pwdChange: (req,res,next) => {
+   pwdChange: (req,res,next) => {
     const { trainerId, pwd, pwdNew, pwdCopy } = req.body;
     const tokenId = req.tokenId;
 
@@ -268,5 +268,79 @@ module.exports = {
         }
       );
     });
+  },
+  getTrainerSlots: (req,res,next) => {
+    const {tokenId} = req;
+
+    dbconnection.getConnection((err,connection) => {
+      if (err) next(err);
+
+      connection.query(getTrainerCardQuery,[tokenId],(error,result,fields) =>{
+        if (error) next(error);
+        connection.release();
+
+        if (functions.isNotEmpty(result)) {
+          const {slotOne,slotTwo,slotThree,slotFour,slotFive,slotSix} = result[0];
+  
+          req.slotOne = slotOne;
+   
+          req.slotTwo = slotTwo;
+          req.slotThree = slotThree;
+          req.slotFour = slotFour;
+          req.slotFive = slotFive;
+          req.slotSix = slotSix;
+          next();
+        } else {
+          res.status(400).json({
+            status:400,
+            message: "Could not find the slots"
+          })
+        }
+
+        
+        
+      })
+    })
+  },
+  putInfirstEmptySlot: (req,res,next) => {
+    const {slotOne,slotTwo,slotThree,slotFour,slotFive,slotSix,putInSlot,tokenId} = req;
+    console.log(slotOne,slotTwo,slotThree,slotFour,slotFive,slotSix);
+    const firstEmptySlotQuery = functions.firstEmptySlotQuery(slotOne,slotTwo,slotThree,slotFour,slotFive,slotSix);
+    const slotPokemon = putInSlot.pokemon + "("+putInSlot.lvl+")";
+
+    if (firstEmptySlotQuery === "Slots full") {
+      res.status(400).json({
+        status:400,
+        message: "Slots are all full! Empty one first!"
+      })
+    } else {
+      if (functions.pokemonAlreadyInSlot(slotOne,slotTwo,slotThree,slotFour,slotFive,slotSix,slotPokemon)) {
+        res.status(400).json({
+          status:400,
+          message: "The Pokèmon " + slotPokemon + " is already in a slot!"
+        })
+      } else {
+        dbconnection.getConnection((err,connection) => {
+          if (err) next(err);
+
+          connection.query(firstEmptySlotQuery,[slotPokemon,tokenId],(error,result,fields) => {
+            if (error) next(error);
+            connection.release();
+
+            if (functions.updateSuccesfull(result.info)) {
+              res.status(200).json({
+                status:200,
+                message: "Your Pokèmon " + slotPokemon + " has been put in a slot"
+              })
+            } else {
+              res.status(401).json({
+                status:401,
+                message: "Pokèmon doesn't want to tag along on your travels right now"
+              })
+            }
+          })
+        })
+      }
+    }
   },
 };

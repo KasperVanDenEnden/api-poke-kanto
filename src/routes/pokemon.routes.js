@@ -9,7 +9,6 @@ router.get('/pokedex',trainerController.validateToken,pokemonController.getPoked
 
 router.put('/train');
 router.put('/evolve',);
-router.put('/slot');
 
 
 module.exports = router
