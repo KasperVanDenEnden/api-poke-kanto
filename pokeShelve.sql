@@ -17,7 +17,7 @@ CREATE TABLE `trainer` (
   `trainerId` varchar(6) NOT NULL,
   `name` varchar(10) NOT NULL,
   `pwd` varchar(10) NOT NULL,
-  `trainerLvl` int NOT NULL DEFAULT 0,
+  `trainerLvl` int NOT NULL DEFAULT 1,
   `experience` int NOT NULL DEFAULT 0,
   `saldo` int NOT NULL DEFAULT 3000,
   `slotOne` varchar(25) NOT NULL DEFAULT '-',

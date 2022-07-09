@@ -4,6 +4,7 @@ const logger = require("./config").logger;
 
 const threwBall = "UPDATE bag SET quantity = quantity - 1 WHERE bagId = ? AND item = ?;"
 const itemsLeft = "SELECT quantity FROM bag WHERE bagId = ? AND item = ?;"
+const addTrainerExpQuery = "UPDATE trainer SET experience = experience + ? WHERE trainerId = ?;"
 
 module.exports = {
     getRandom6Digits() {
@@ -115,6 +116,18 @@ module.exports = {
                 if (error) throw error;
                 connection.release();
                 
+            })
+        })
+    },
+    addTrainerExp(trainerId) {
+        const exp = 10;
+        
+        dbconnection.getConnection((err,connection) => {
+            if (err) throw err
+
+            connection.query(addTrainerExpQuery,[exp,trainerId],(error,result,fields) => {
+                if (error) throw error;
+                connection.release();  
             })
         })
     },
@@ -276,6 +289,44 @@ module.exports = {
     },
 
     // locations
+    locationUnlocked(trainerLvl,location) {
+        if (location === "Grass" ) {return true}
+        if (location === "Tunnel" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Plain" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "River" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Lake" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Fields" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Beach" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Forest" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Cave" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Desert" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Ocean" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Lab" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Safari" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Mountain" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Mansion" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        if (location === "Volcano" && trainerLvl >= this.locationLvlRequired(location)) {return true;}
+        return false;
+
+    },
+    locationLvlRequired(location) {
+        if (location === "Grass") {return 1}
+        if (location === "Tunnel") {return 5;}
+        if (location === "Plain") {return 10;}
+        if (location === "River") {return 10;}
+        if (location === "Lake") {return 15;}
+        if (location === "Fields") {return 20;}
+        if (location === "Beach") {return 25;}
+        if (location === "Forest") {return 30;}
+        if (location === "Cave") {return 30;}
+        if (location === "Desert") {return 35;}
+        if (location === "Ocean") {return 40;}
+        if (location === "Lab") {return 45;}
+        if (location === "Safari") {return 50;}
+        if (location === "Mountain") {return 50;}
+        if (location === "Mansion") {return 55;}
+        if (location === "Volcano") {return 60;}
+    },
     locationDexNr(location) {
         let dexNrs;
         if (location === "Grass") {dexNrs = this.grassDexNr();}
@@ -285,12 +336,12 @@ module.exports = {
         if (location === "Lake") {dexNrs = this.lakeDexNr();}
         if (location === "Fields") {dexNrs = this.fieldsDexNr();}
         if (location === "Beach") {dexNrs = this.beachDexNr();}
-        if (location === "Cave") {dexNrs = this.caveDexNr();}
         if (location === "Forest") {dexNrs = this.forestDexNr();}
+        if (location === "Cave") {dexNrs = this.caveDexNr();}
         if (location === "Desert") {dexNrs = this.desertDexNr();}
         if (location === "Ocean") {dexNrs = this.oceanDexNr();}
         if (location === "Lab") {dexNrs = this.labDexNr();}
-        if (location === "Lab") {dexNrs = this.safariDexNr()}
+        if (location === "Safari") {dexNrs = this.safariDexNr()}
         if (location === "Mountain") {dexNrs = this.mountainDexNr();}
         if (location === "Mansion") {dexNrs = this.mansionDexNr();}
         if (location === "Volcano") {dexNrs = this.volcanoDexNr();}
