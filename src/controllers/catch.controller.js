@@ -23,21 +23,24 @@ module.exports = {
         next();
     },
     getPokemonAndCatchRate: (req,res,next) => {
+        const {location} = req.body;
+        console.log(location)
         dbconnection.getConnection((err,connection) => {
             if (err) next(err);
             let randomDexNr;
             if (functions.ballString(req.originalUrl) === "Master Ball") {
-                randomDexNr = functions.randomLegendaryDexNr;
+                randomDexNr = functions.randomLegendaryDexNr();
             } else {
-                randomDexNr = functions.randomDexNr();
+                randomDexNr = functions.locationDexNr(location);
             }         
 
             connection.query(getPokemonByDexNrQuery,[randomDexNr],(error,result,fields) => {
                 if (error) next(error);
                 connection.release();
-
+                logger.info("REACHED")
                 if (functions.isNotEmpty(result)) {
                     req.pokemon = result[0];
+                    req.location = location;
                     next();
                 } else {
                     res.status(401).json({
@@ -72,10 +75,12 @@ module.exports = {
         })
     },
     catchPokeball: (req,res,next) => {
-        const {catchedQuery,shinyBool,storageId,bagId,itemLeft,trainer} = req;
+        const {catchedQuery,shinyBool,storageId,bagId,itemLeft,trainer,location} = req;
         const {dexNr,pokemon,type,minLevelCatch,maxLevelCatch,catchRate} = req.pokemon;
         const catchBool = functions.catchPokeball(catchRate);
-        let level = Math.floor(Math.random() * (maxLevelCatch - minLevelCatch + minLevelCatch) + minLevelCatch);
+        let level = Math.floor(Math.random() * (maxLevelCatch - minLevelCatch) + minLevelCatch);
+        // let level = Math.floor(Math.random() * (40 - 20) + 20);
+
         const gender = functions.maleOrFemale(pokemon);
         functions.threwBall(bagId, req.originalUrl);
         const ballString = (functions.ballString(req.originalUrl));
@@ -94,7 +99,7 @@ module.exports = {
                     if (functions.affectedRow(result.affectedRows)) {
                         res.status(200).json({
                             status:200,
-                            message: "You caught the Pokèmon " + pokemon + "("+ gender+") on level "+ level + "!",
+                            message: "You caught the Pokèmon " + pokemon + "("+ gender+") on level "+ level + " in " + location + "!",
                             info: "You have " + itemLeft + " " + ballString + " left.",
                             result: caughtPokemon
                         })
@@ -113,7 +118,7 @@ module.exports = {
         } else {
             res.status(201).json({
                 status:201,
-                message: "You found the Pokèmon " + pokemon + "("+ gender+"), but it ran away!",
+                message: "You found the Pokèmon " + pokemon + "("+ gender+") in " + location + ", but it ran away!",
                 info: "You have " + itemLeft + " " + ballString + " left."
             })
         }
