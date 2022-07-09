@@ -10,7 +10,7 @@ const bagController = require("../controllers/bag.controller");
 router.post('/catch/poke',trainerController.validateToken,bagController.getBagById,catchController.pokeBallLeft,catchController.shiny,storageController.getStorage,catchController.getPokemonAndCatchRate,catchController.catchPokeball);
 router.post('/catch/great',trainerController.validateToken,bagController.getBagById,catchController.pokeBallLeft,catchController.shiny,storageController.getStorage,catchController.getPokemonAndCatchRate,catchController.catchPokeball);
 router.post('/catch/ultra',trainerController.validateToken,bagController.getBagById,catchController.pokeBallLeft,catchController.shiny,storageController.getStorage,catchController.getPokemonAndCatchRate,catchController.catchPokeball);
-router.post('/catch/master',);
+router.post('/catch/master',trainerController.validateToken,bagController.getBagById,catchController.pokeBallLeft,catchController.shiny,storageController.getStorage,catchController.getPokemonAndCatchRate,catchController.catchPokeball);
 
 
 module.exports = router
