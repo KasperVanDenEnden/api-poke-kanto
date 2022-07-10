@@ -17,7 +17,7 @@ CREATE TABLE `trainer` (
   `trainerId` varchar(6) NOT NULL,
   `name` varchar(10) NOT NULL,
   `pwd` varchar(10) NOT NULL,
-  `trainerLvl` int NOT NULL DEFAULT 0,
+  `trainerLvl` int NOT NULL DEFAULT 1,
   `experience` int NOT NULL DEFAULT 0,
   `saldo` int NOT NULL DEFAULT 3000,
   `slotOne` varchar(25) NOT NULL DEFAULT '-',
@@ -51,7 +51,7 @@ CREATE TABLE `bag` (
     `bagId` int NOT NULL,
     `item` varchar(25) NOT NULL,
     `sort` varchar(25) NOT NULL,
-    `quantity` int NULL DEFAULT 0,
+    `quantity` int NULL DEFAULT 1,
     PRIMARY KEY (`bagId`,`item`),
     CONSTRAINT FK_BagTrainerBag FOREIGN KEY (bagId) REFERENCES `trainerBag` (bagId) ON UPDATE CASCADE ON DELETE CASCADE
 );
