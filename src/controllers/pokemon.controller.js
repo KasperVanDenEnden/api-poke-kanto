@@ -3,9 +3,13 @@ const assert = require("assert");
 const { info } = require("console");
 const logger = require("../config/config").logger;
 const functions = require("../config/functions");
-const ot = require("../config/ot");
+const excavates = require("../config/excavates");
+const e = require("express");
 
 const getPokemonFromStorageQuery = 'SELECT * FROM storage WHERE storageId = ? AND pokemon = ? AND lvl = ?';
+const itemAlreadyInBagQuery = 'SELECT * FROM bag WHERE bagId = ? AND item = ?;';
+const putExcavatedInBagQuery = "UPDATE trainer SET quantity = quantity + 1 WHERE item = ? AND bagId = ?;";
+const putNewExcavatedInBagQuery = "INSERT INTO bag (bagId,item,sort) VALUES (?,?,?);";
 
 module.exports = {
   getPokedexQuery: (req,res,next) => {
@@ -138,9 +142,80 @@ module.exports = {
       })
     })
   },
+  excavate: (req,res,next) => {
+    let dugUp;
+    const typeExcavate = Math.floor(Math.random() * 6)
+    if (typeExcavate == 0 || typeExcavate == 2 || typeExcavate == 4) {
+      res.status(400).json({
+        status:400,
+        message:"Wall collapsed and you found nothing! Please try again!"
+      })
+    } else {
+      const {bagId} = req;
+      if (typeExcavate == 0) {dugUp = excavates.excavateFossil()} 
+      if (typeExcavate == 3) {dugUp = excavates.excavateStone()}
+      if (typeExcavate == 5) {dugUp = excavates.excavateValuable()}
+      const excavated = dugUp[Math.floor(Math.random()*dugUp.length)]
+      
+      dbconnection.getConnection((err,connection) => {
+        if (err) next(err);
+        
+        logger.info("BAGID" + bagId)
+        logger.info("EXCAVATED: " + excavated)
+        connection.query(itemAlreadyInBagQuery,[excavated,bagId],(error,result,fields) => {
+          if (error) next(error);
+          logger.info("LENGTH" + result.length);
+          if (result.length === 0) { console. log("Array is empty!") }
+          if (!functions.arrayIsEmpty(result)) {
+            // update
+           
+            connection.query(putExcavatedInBagQuery,[excavated,bagId],(error,result,fields) => {
+              if (error) next(error);
+              connection.release();
+              
+              if (result) {
+                res.status(200).json({
+                  status:200,
+                  message: "You found the treasure " + excavated + " and put it in your bag!"
+                })
+              } else {
+                  res.status(401).json({
+                    status:401,
+                    message: "Team Rocket stole your treasue!"
+                  })
+              }
 
-};
+            })
+          } else {
+            // insert
+            const sort = functions.getExcavatedSort(excavated);
 
+            connection.query(putNewExcavatedInBagQuery,[bagId,excavated,sort],(error,result,fields) => {
+              if (error) next(error);
+              connection.release();
+              
+              logger.info(result)
+              if (result) {
+                res.status(200).json({
+                  status:200,
+                  message: "You found the treasure " + excavated + " and put it in your bag!"
+                })
+              } else {
+                  res.status(401).json({
+                    status:401,
+                    message: "Team Rocket stole your treasue!"
+                  })
+              }
+
+      
+            })
+          }
+        })
+      })
+    }
+  },
+
+}
 
 
 // putInSlot: (req,res,next) => {

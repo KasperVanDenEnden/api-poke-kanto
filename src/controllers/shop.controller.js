@@ -3,6 +3,7 @@ const assert = require("assert");
 const { info } = require("console");
 const logger = require("../config/config").logger;
 const functions = require("../config/functions");
+const lotery = require("../config/lotery");
 
 const getBagByIdQuery = 'SELECT bagId FROM trainerBag WHERE trainerId = ?;'
 const itemNotInBagYetQuery = 'SELECT * FROM bag WHERE bagId = ? AND item = ?;'
@@ -11,7 +12,7 @@ const getItemQuery = 'SELECT * FROM item WHERE item = ?;'
 const saldoCheckQuery = 'SELECT * FROM trainer WHERE trainerId = ? AND saldo >= ?;'
 
 // shop queries
-const getShopInventoryQuery = "SELECT * FROM item;"
+const getShopInventoryQuery = "SELECT * FROM item ORDER BY buyValue;"
 const receiveMoneyItemQuery = "UPDATE trainer SET saldo = saldo + ? WHERE trainerId = ?;"
 const giveMoneyItemQuery = "UPDATE trainer SET saldo = saldo - ? WHERE trainerId = ?;"
 const checkSellItemQuery = "SELECT * FROM bag WHERE bagId = ? AND item = ? AND quantity >=?;"
@@ -289,14 +290,14 @@ module.exports = {
     },
     lotery: (req,res,next) => {
         const tokenId = req.tokenId;
-        const ticket = functions.getRandom6Digits();
-        const matches = functions.getTicketMatchingNumbers(ticket,tokenId);
-        let message = functions.getLoteryMessage(matches);
+        const ticket = lotery.getTicketDigits();
+        const matches = lotery.getTicketMatchingNumbers(ticket,tokenId);
+        let message = lotery.getLoteryMessage(matches);
       
         if (matches > 0) {
-            const prize = functions.getLoteryPrize(matches);
-            const quantity = functions.getLoteryPrizeQuantity(matches);
-            const itemType = functions.getItemType(prize);
+            const prize = lotery.getLoteryPrize(matches);
+            const quantity = lotery.getLoteryPrizeQuantity(matches);
+            const itemType = lotery.getItemType(prize);
 
             dbconnection.getConnection((err,connection) =>{
                 if (err) next(err);
@@ -343,7 +344,7 @@ module.exports = {
                                             message: message
                                         })
                                     } else {
-                                        message += " Team Rocket appeared and stole your prizeof " + quantity + " " + prize + ". Tough luck!";
+                                        message += " Team Rocket appeared and stole your prize of " + quantity + " " + prize + ". Tough luck!";
                                         res.status(401).json({
                                             status: 401,
                                             message: message

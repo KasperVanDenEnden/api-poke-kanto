@@ -51,7 +51,7 @@ CREATE TABLE `bag` (
     `bagId` int NOT NULL,
     `item` varchar(25) NOT NULL,
     `sort` varchar(25) NOT NULL,
-    `quantity` int NULL DEFAULT 0,
+    `quantity` int NULL DEFAULT 1,
     PRIMARY KEY (`bagId`,`item`),
     CONSTRAINT FK_BagTrainerBag FOREIGN KEY (bagId) REFERENCES `trainerBag` (bagId) ON UPDATE CASCADE ON DELETE CASCADE
 );
